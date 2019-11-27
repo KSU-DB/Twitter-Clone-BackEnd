@@ -9,10 +9,13 @@ import reactor.core.publisher.Mono;
 @Service
 public class AccountService {
 
-    Logger logger = LoggerFactory.getLogger(AccountService.class);
+    private Logger logger = LoggerFactory.getLogger(AccountService.class);
 
-    @Autowired
-    AccountRepository accountRepository;
+    private final AccountRepository accountRepository;
+
+    public AccountService(AccountRepository accountRepository) {
+        this.accountRepository = accountRepository;
+    }
 
     public Mono<Account> getAccount(String id) {
         return accountRepository.findById(id);
