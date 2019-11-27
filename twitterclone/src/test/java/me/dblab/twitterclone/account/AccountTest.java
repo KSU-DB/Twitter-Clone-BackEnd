@@ -43,4 +43,5 @@ public class AccountTest {
         assertThat(account.getEmail()).isEqualTo(email);
         assertThat(account.getCreatedDate()).isEqualTo(createdDate);
     }
+
 }

@@ -1,30 +1,32 @@
 package me.dblab.twitterclone.account;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
 
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.Date;
 
-@Getter @Setter
+@Builder @Data
 @AllArgsConstructor @NoArgsConstructor
-@Builder @Document
-public class Account {
+public class AccountDto {
 
-    @Id
+    @NotEmpty
     private String id;
+    @NotEmpty
     private String username;
+    @NotEmpty
     private String nickname;
+    @NotEmpty
     private String password;
+    @NotEmpty
     private String email;
+    @NotNull
     private Date birthDate;
+    @NotNull
     private LocalDateTime createdDate;
-
-    public void update(Account account) {
-        this.username = account.getUsername();
-        this.nickname = account.getNickname();
-        this.password = account.getPassword();
-        this.email = account.getEmail();
-    }
 }
