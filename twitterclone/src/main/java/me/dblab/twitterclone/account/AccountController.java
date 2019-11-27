@@ -1,20 +1,18 @@
 package me.dblab.twitterclone.account;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
-
 
 @RestController
 @RequestMapping("/api/users")
 public class AccountController {
 
-    @Autowired
-    AccountRepository accountRepository;
+    private final AccountService accountService;
 
-    @Autowired
-    AccountService accountService;
+    public AccountController(AccountService accountService) {
+        this.accountService = accountService;
+    }
 
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
