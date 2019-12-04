@@ -1,6 +1,7 @@
 package me.dblab.twitterclone.account;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
@@ -22,16 +23,19 @@ public class AccountController {
 
     // Registration
     @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public void saveAccount(@RequestBody Account account)  {
-        accountService.saveAccount(account);
+    public Mono<ResponseEntity> saveAccount(@RequestBody Mono<Account> account) {
+        return accountService.saveAccount(account);
+    }
+
+    @PostMapping("/login")
+    public Mono<ResponseEntity> login(@RequestBody Mono<Account> account) {
+        return accountService.login(account);
     }
 
     // Update User
     @PutMapping("/{id}")
-    @ResponseStatus(HttpStatus.OK)
-    public void updateAccount(@PathVariable String id, @RequestBody Account account)    {
-        accountService.updateAccount(account, id);
+    public Mono<ResponseEntity> updateAccount(@PathVariable String id, @RequestBody Mono<Account> account) {
+        return accountService.updateAccount(id, account);
     }
 
     // Delete User

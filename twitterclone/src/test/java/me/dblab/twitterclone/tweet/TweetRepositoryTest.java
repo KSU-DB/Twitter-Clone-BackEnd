@@ -39,4 +39,18 @@ public class TweetRepositoryTest {
                 .verifyComplete();
     }
 
+    @Test
+    public void createTweetTest2() {
+        Tweet tweet = Tweet.builder().id(UUID.randomUUID().toString()).content("test content").createdDate(LocalDateTime.now()).build();
+
+        //save
+        Mono.justOrEmpty(tweet)
+                .flatMap(tweetRepository::save);
+
+        Mono<Tweet> byId = tweetRepository.findById(tweet.getId());
+        //verify
+        StepVerifier.create(byId)
+                .assertNext(index -> assertThat(index.getContent()).isEqualTo("test content"))
+                .verifyComplete();
+    }
 }
