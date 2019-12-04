@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.BDDAssertions.then;
 
 @ExtendWith(SpringExtension.class)
 public class TweetTest {
@@ -26,6 +27,10 @@ public class TweetTest {
 
         assertThat(tweet).isNotNull();
         assertThat(tweet.getContent()).isEqualTo("test content");
+
+        then(tweet).isNotNull();
+        then(tweet.getContent()).isEqualTo("test content")
+                .isNotNull();
     }
 
 }

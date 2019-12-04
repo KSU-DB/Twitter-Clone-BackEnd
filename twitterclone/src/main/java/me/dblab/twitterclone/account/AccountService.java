@@ -1,44 +1,86 @@
 package me.dblab.twitterclone.account;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import me.dblab.twitterclone.config.jwt.TokenProvider;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
-@Service
-public class AccountService {
+import java.util.*;
 
-    private Logger logger = LoggerFactory.getLogger(AccountService.class);
+@Service
+public class AccountService implements ReactiveUserDetailsService {
 
     private final AccountRepository accountRepository;
 
-    public AccountService(AccountRepository accountRepository) {
+    private final TokenProvider tokenProvider;
+
+    private final PasswordEncoder passwordEncoder;
+
+    public AccountService(AccountRepository accountRepository, TokenProvider tokenProvider, PasswordEncoder passwordEncoder) {
         this.accountRepository = accountRepository;
+        this.tokenProvider = tokenProvider;
+        this.passwordEncoder = passwordEncoder;
     }
 
-    public Mono<Account> getAccount(String id) {
+    Mono<Account> getAccount(String id) {
         return accountRepository.findById(id);
     }
 
-    public void saveAccount(Account account) {
-        Mono.just(account)
-                .flatMap(accountRepository::save)
-                .subscribe(x -> logger.info("x : " + x));
+    Mono<ResponseEntity> saveAccount(Mono<Account> account) {
+        return account
+                .map(user -> {
+                    user.setPassword(passwordEncoder.encode(user.getPassword()));
+                    user.setRoles(Collections.singletonList(Role.USER));
+                    return user;
+                })
+                .flatMap(user -> accountRepository.findByEmail(user.getEmail())
+                        .map(existUser -> ResponseEntity.badRequest().build())
+                .switchIfEmpty(accountRepository.save(user).map(savedUser -> new ResponseEntity<>(savedUser, HttpStatus.CREATED))));
     }
 
-    public void updateAccount(Account account, String id) {
-        accountRepository.findById(id)
-                .flatMap(modifiedAccount -> {
-                    modifiedAccount.update(account);
-                    return accountRepository.save(modifiedAccount);
-                })
-                .subscribe();
+    Mono<ResponseEntity> updateAccount(String id, Mono<Account> account) {
+        return account.flatMap(updateAcc ->
+                accountRepository.findById(id)
+                        .flatMap(modiAcc -> {
+                            modiAcc.update(updateAcc);
+                            return accountRepository.save(modiAcc);
+                        }).map(modiAcc -> new ResponseEntity<>(modiAcc, HttpStatus.OK))
+                        .switchIfEmpty(Mono.just(ResponseEntity.notFound().build())));
+    }
+
+    public Mono<ResponseEntity> login(Mono<Account> account) {
+        return account.flatMap(account1 -> accountRepository.findByEmail(account1.getEmail())
+                .map(account2 -> {
+                    if (passwordEncoder.matches(account1.getPassword(), account2.getPassword())) {
+                        return ResponseEntity.ok().body(tokenProvider.generateToken(account2));
+                    }
+                    return ResponseEntity.badRequest().build();
+                }).switchIfEmpty(Mono.just(ResponseEntity.notFound().build())));
     }
 
     public void deleteAccount(String id) {
         accountRepository.deleteById(id);
     }
 
+    @Override
+    public Mono<UserDetails> findByUsername(String username) {
+        return accountRepository.findByEmail(username)
+                .switchIfEmpty(Mono.error(new UsernameNotFoundException("유저를 찾을 수 없습니다.")))
+                .map(account -> new User(account.getUsername(), account.getPassword(), authorities()));
+    }
 
+    private Collection<? extends GrantedAuthority> authorities() {
+        List<GrantedAuthority> grantedAuthorities = new ArrayList<>();
+        grantedAuthorities.add(new SimpleGrantedAuthority("USER"));
+        return grantedAuthorities;
+    }
 }
