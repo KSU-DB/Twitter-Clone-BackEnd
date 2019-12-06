@@ -2,5 +2,6 @@ app-properties:
   test-username : testUsername
   test-password : testPassword
   test-email : test@gmail.com
+  test-nickname : testNickname
 
 
