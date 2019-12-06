@@ -1,7 +1,7 @@
 package me.dblab.twitterclone.account;
 
 import me.dblab.twitterclone.config.jwt.TokenProvider;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.GrantedAuthority;
@@ -20,31 +20,30 @@ import java.util.*;
 public class AccountService implements ReactiveUserDetailsService {
 
     private final AccountRepository accountRepository;
-
     private final TokenProvider tokenProvider;
-
     private final PasswordEncoder passwordEncoder;
+    private final ModelMapper modelMapper;
 
-    public AccountService(AccountRepository accountRepository, TokenProvider tokenProvider, PasswordEncoder passwordEncoder) {
+    public AccountService(AccountRepository accountRepository, TokenProvider tokenProvider, PasswordEncoder passwordEncoder, ModelMapper modelMapper) {
         this.accountRepository = accountRepository;
         this.tokenProvider = tokenProvider;
         this.passwordEncoder = passwordEncoder;
+        this.modelMapper = modelMapper;
     }
 
     Mono<Account> getAccount(String id) {
         return accountRepository.findById(id);
     }
 
-    Mono<ResponseEntity> saveAccount(Mono<Account> account) {
-        return account
-                .map(user -> {
-                    user.setPassword(passwordEncoder.encode(user.getPassword()));
-                    user.setRoles(Collections.singletonList(Role.USER));
-                    return user;
-                })
-                .flatMap(user -> accountRepository.findByEmail(user.getEmail())
-                        .map(existUser -> ResponseEntity.badRequest().build())
-                .switchIfEmpty(accountRepository.save(user).map(savedUser -> new ResponseEntity<>(savedUser, HttpStatus.CREATED))));
+    Mono<ResponseEntity> saveAccount(AccountDto accountDto) {
+        return Mono.just(accountDto).map(user -> {
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
+            user.setRoles(Collections.singletonList(Role.USER));
+            return user;
+        })
+                .map(user -> modelMapper.map(user, Account.class))
+                .flatMap(accountRepository::save)
+                .map(acc -> new ResponseEntity<>("{}", HttpStatus.CREATED));
     }
 
     Mono<ResponseEntity> updateAccount(String id, Mono<Account> account) {
