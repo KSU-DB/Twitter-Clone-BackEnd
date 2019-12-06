@@ -1,7 +1,6 @@
 package me.dblab.twitterclone.account;
 
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
+import me.dblab.twitterclone.common.AppProperties;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
@@ -11,10 +10,11 @@ import java.util.regex.Pattern;
 @Component
 public class AccountValidator implements Validator {
 
-    @Value("${regex.email}")
-    String regexEmail;
-    @Value("${regex.password}")
-    String regexPassword;
+    private final AppProperties appProperties;
+
+    public AccountValidator(AppProperties appProperties) {
+        this.appProperties = appProperties;
+    }
 
     @Override
     public boolean supports(Class<?> clazz) {
@@ -35,10 +35,10 @@ public class AccountValidator implements Validator {
         if (accountDto.getUsername().length() < 8 || accountDto.getPassword().length() < 10) {
             errors.rejectValue("username", "Too Short");
         }
-        if (!Pattern.matches(regexPassword, accountDto.getPassword().trim())) {
+        if (!Pattern.matches(appProperties.getRegexPassword(), accountDto.getPassword().trim())) {
             errors.rejectValue("password", "Not Valid Password");
         }
-        if (!Pattern.matches(regexEmail, accountDto.getEmail().trim())) {
+        if (!Pattern.matches(appProperties.getRegexEmail(), accountDto.getEmail().trim())) {
             errors.rejectValue("email", "Not Valid Email");
         }
     }
