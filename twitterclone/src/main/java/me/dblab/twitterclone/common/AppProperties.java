@@ -13,4 +13,5 @@ public class AppProperties {
     private String testUsername;
     private String testPassword;
     private String testEmail;
+    private String testNickname;
 }
