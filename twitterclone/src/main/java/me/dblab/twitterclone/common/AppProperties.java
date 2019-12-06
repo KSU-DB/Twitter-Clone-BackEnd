@@ -13,6 +13,7 @@ public class AppProperties {
     private String testUsername;
     private String testPassword;
     private String testEmail;
+    private String testNickname;
     private String regexEmail;
     private String regexPassword;
 
