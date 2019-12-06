@@ -4,6 +4,7 @@ import me.dblab.twitterclone.account.Account;
 import me.dblab.twitterclone.account.AccountRepository;
 import me.dblab.twitterclone.account.Role;
 import me.dblab.twitterclone.common.AppProperties;
+import me.dblab.twitterclone.common.BaseControllerTest;
 import me.dblab.twitterclone.config.jwt.TokenProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -25,18 +26,13 @@ import java.util.UUID;
 
 import static org.assertj.core.api.BDDAssertions.then;
 
-@ExtendWith(SpringExtension.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@AutoConfigureWebTestClient
-public class TweetControllerTest {
+public class TweetControllerTest extends BaseControllerTest {
+
     @Autowired
     TweetController tweetController;
 
     @Autowired
     TweetRepository tweetRepository;
-
-    @Autowired
-    WebTestClient webTestClient;
 
     @Autowired
     AppProperties appProperties;
