@@ -22,8 +22,8 @@ public class TweetController {
     }
 
     @GetMapping(value = "/{id}")
-    public Mono<Tweet> getAnTweet(@PathVariable String id) {
-        return tweetService.getAnTweet(id);
+    public Mono<Tweet> getTweet(@PathVariable String id) {
+        return tweetService.getTweet(id);
     }
 
     @PostMapping

@@ -28,7 +28,7 @@ public class TweetService {
         return tweetRepository.findAll();
     }
 
-    public Mono<Tweet> getAnTweet(String id) {
+    public Mono<Tweet> getTweet(String id) {
         return tweetRepository.findById(id);
     }
 
