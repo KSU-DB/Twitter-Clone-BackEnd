@@ -14,4 +14,7 @@ public class AppProperties {
     private String testPassword;
     private String testEmail;
     private String testNickname;
+    private String regexEmail;
+    private String regexPassword;
+
 }

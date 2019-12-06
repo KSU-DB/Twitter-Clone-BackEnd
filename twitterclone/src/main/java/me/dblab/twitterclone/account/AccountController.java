@@ -2,7 +2,10 @@ package me.dblab.twitterclone.account;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BeanPropertyBindingResult;
+import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ServerWebInputException;
 import reactor.core.publisher.Mono;
 
 @RestController
@@ -10,11 +13,12 @@ import reactor.core.publisher.Mono;
 public class AccountController {
 
     private final AccountService accountService;
+    private final AccountValidator accountValidator;
 
-    public AccountController(AccountService accountService) {
+    public AccountController(AccountService accountService, AccountValidator accountValidator) {
         this.accountService = accountService;
+        this.accountValidator = accountValidator;
     }
-
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
     public Mono<Account> getAccount(@PathVariable String id) {
@@ -23,8 +27,17 @@ public class AccountController {
 
     // Registration
     @PostMapping
-    public Mono<ResponseEntity> saveAccount(@RequestBody Mono<Account> account) {
-        return accountService.saveAccount(account);
+    public Mono<ResponseEntity> saveAccount(@RequestBody AccountDto accountDto)  {
+        this.validate(accountDto);
+        return accountService.saveAccount(accountDto);
+    }
+
+    private void validate(AccountDto accountDto) {
+        Errors errors = new BeanPropertyBindingResult(accountDto, "account");
+        accountValidator.validate(accountDto, errors);
+        if (errors.hasErrors()) {
+            throw new ServerWebInputException(errors.toString());
+        }
     }
 
     @PostMapping("/login")

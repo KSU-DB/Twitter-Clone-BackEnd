@@ -3,5 +3,10 @@ app-properties:
   test-password : testPassword
   test-email : test@gmail.com
   test-nickname : testNickname
+  regexEmail : ^[A-Za-z0-9_\.\-]+@[A-Za-z0-9\-]+\.[A-Za-z0-9\-]+
+  regexPassword : ^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[$@$!%*?&])[A-Za-z\d$@$!%*?&]{8,}
 
-
+spring:
+  jackson:
+    deserialization:
+      fail-on-unknown-properties: true
