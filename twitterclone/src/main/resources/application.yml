@@ -1,6 +1,6 @@
 app-properties:
   test-username : testUsername
-  test-password : testPassword
+  test-password : Didrltjr3!@
   test-email : test@gmail.com
   test-nickname : testNickname
   regexEmail : ^[A-Za-z0-9_\.\-]+@[A-Za-z0-9\-]+\.[A-Za-z0-9\-]+
