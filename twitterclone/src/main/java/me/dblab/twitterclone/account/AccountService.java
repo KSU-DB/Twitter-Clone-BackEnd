@@ -36,7 +36,7 @@ public class AccountService implements ReactiveUserDetailsService {
         return accountRepository.findById(id);
     }
 
-    Mono<ResponseEntity> saveAccount(AccountDto accountDto) {
+    public Mono<ResponseEntity> saveAccount(AccountDto accountDto) {
         return Mono.just(accountDto).map(user -> {
             user.setPassword(passwordEncoder.encode(user.getPassword()));
             user.setRoles(Collections.singletonList(Role.USER));
@@ -47,7 +47,7 @@ public class AccountService implements ReactiveUserDetailsService {
                 .map(acc -> new ResponseEntity<>("{}", HttpStatus.CREATED));
     }
 
-    Mono<ResponseEntity> updateAccount(String id, Mono<Account> account) {
+    public Mono<ResponseEntity> updateAccount(String id, Mono<Account> account) {
         return account.flatMap(updateAcc ->
                 accountRepository.findById(id)
                         .flatMap(modiAcc -> {
