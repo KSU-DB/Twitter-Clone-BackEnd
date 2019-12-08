@@ -40,7 +40,7 @@ public class AccountService implements ReactiveUserDetailsService {
         return accountRepository.findById(id);
     }
 
-    Mono<ResponseEntity> saveAccount(AccountDto accountDto) {
+    public Mono<ResponseEntity> saveAccount(AccountDto accountDto) {
         return Mono.just(accountDto).map(user -> {
             user.setPassword(passwordEncoder.encode(user.getPassword()));
             return modelMapper.map(user, Account.class);
@@ -63,7 +63,7 @@ public class AccountService implements ReactiveUserDetailsService {
                                 .flatMap(accountRepository::save)
                                 .map(res -> new ResponseEntity<>("{}", HttpStatus.OK))
 
-                );
+                );    
     }
 
     public Mono<ResponseEntity> login(Mono<Account> account) {
