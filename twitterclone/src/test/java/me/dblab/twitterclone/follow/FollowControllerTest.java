@@ -83,7 +83,7 @@ public class FollowControllerTest extends BaseControllerTest {
     @Test
     @DisplayName("정상적으로 팔로잉이 동작하는 테스트")
     public void following() {
-        //팔로잉할 유저 이메일을 바디로 넘김
+        //팔로잉할 유저 이메일을 파라미터로 넘김
         IntStream.rangeClosed(1, 30).forEach(index ->
             webTestClient.post()
                     .uri(followUrl + "/" + createEmail(index))
