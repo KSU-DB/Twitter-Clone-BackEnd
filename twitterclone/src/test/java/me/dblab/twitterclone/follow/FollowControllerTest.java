@@ -4,7 +4,6 @@ import me.dblab.twitterclone.account.Account;
 import me.dblab.twitterclone.account.AccountDto;
 import me.dblab.twitterclone.account.AccountRepository;
 import me.dblab.twitterclone.account.AccountService;
-import me.dblab.twitterclone.common.AppProperties;
 import me.dblab.twitterclone.common.BaseControllerTest;
 import me.dblab.twitterclone.config.jwt.TokenProvider;
 import org.hamcrest.Matchers;
@@ -28,9 +27,6 @@ public class FollowControllerTest extends BaseControllerTest {
 
     @Autowired
     TokenProvider tokenProvider;
-
-    @Autowired
-    AppProperties appProperties;
 
     @Autowired
     AccountService accountService;

@@ -1,29 +1,13 @@
 package me.dblab.twitterclone.account;
 
-import me.dblab.twitterclone.common.AppProperties;
+import me.dblab.twitterclone.common.BaseControllerTest;
 import me.dblab.twitterclone.config.jwt.TokenProvider;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Mono;
 
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.Date;
-
-@ExtendWith(SpringExtension.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@AutoConfigureWebTestClient
-public class AccountValidateTests {
-
-    @Autowired
-    WebTestClient webTestClient;
+public class AccountValidateTests extends BaseControllerTest {
 
     @Autowired
     AccountRepository accountRepository;
@@ -34,12 +18,7 @@ public class AccountValidateTests {
     @Autowired
     PasswordEncoder passwordEncoder;
 
-    @Autowired
-    AppProperties appProperties;
-
     private final String accountUrl = "/api/users";
-
-    private final String BEARER = "Bearer ";
 
     @Test
     public void null_검증_테스트()  {
@@ -190,18 +169,6 @@ public class AccountValidateTests {
                 .exchange()
                 .expectStatus()
                 .isCreated();
-    }
-
-    private AccountDto createAccountDto() {
-        return AccountDto.builder()
-                .username(appProperties.getTestUsername())
-                .nickname(appProperties.getTestNickname())
-                .email(appProperties.getTestEmail())
-                .password(appProperties.getTestPassword())
-                .birthDate(Date.from(Instant.now()))
-                .createdDate(LocalDateTime.now())
-                .roles(Arrays.asList(Role.USER))
-                .build();
     }
 
 }

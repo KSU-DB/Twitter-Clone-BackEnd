@@ -60,8 +60,8 @@ public class AccountController {
     // Delete User
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public void deleteAccount(@PathVariable String id)  {
-        accountService.deleteAccount(id);
+    public Mono<Void> deleteAccount(@PathVariable String id)  {
+        return accountService.deleteAccount(id);
     }
 }
 
