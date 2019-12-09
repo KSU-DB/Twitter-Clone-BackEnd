@@ -59,7 +59,7 @@ public class TweetValidatorTest extends BaseControllerTest {
 
     @Test
     @DisplayName("컨텐츠의 길이가 0일때")
-    public void contentValidate() {
+    public void contentValidate_less_than_1() {
         String tweetUrl = "/api/tweets";
 
         //트윗 생성
@@ -80,7 +80,7 @@ public class TweetValidatorTest extends BaseControllerTest {
 
     @Test
     @DisplayName("컨텐츠의 길이가 255이상 일 때")
-    public void contentValidate2() {
+    public void contentValidate_length_greater_than_255() {
         String tweetUrl = "/api/tweets";
         String randomString = RandomStringUtils.random(256);
 
@@ -88,6 +88,28 @@ public class TweetValidatorTest extends BaseControllerTest {
         //트윗 생성
         TweetDto tweetDto = new TweetDto();
         tweetDto.setContent(randomString);
+
+        webTestClient.post()
+                .uri(tweetUrl)
+                .header(HttpHeaders.AUTHORIZATION, jwt)
+                .body(Mono.just(tweetDto), TweetDto.class)
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .exchange()
+                .expectStatus()
+                .isBadRequest()
+                .expectBody()
+                .jsonPath("content", "Content must be at least 1 character long or less than 255 characters long.");
+    }
+
+    @Test
+    @DisplayName("컨텐츠가 null일 때")
+    public void contentValidate_null() {
+        String tweetUrl = "/api/tweets";
+        String randomString = RandomStringUtils.random(256);
+
+        then(randomString.length()).isGreaterThan(255);
+        //트윗 생성
+        TweetDto tweetDto = new TweetDto();
 
         webTestClient.post()
                 .uri(tweetUrl)
