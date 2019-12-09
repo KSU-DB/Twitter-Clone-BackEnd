@@ -1,6 +1,5 @@
 package me.dblab.twitterclone.account;
 
-import me.dblab.twitterclone.common.AppProperties;
 import me.dblab.twitterclone.common.BaseControllerTest;
 import me.dblab.twitterclone.config.jwt.TokenProvider;
 import org.junit.jupiter.api.Test;
@@ -29,9 +28,6 @@ public class AccountControllerTests extends BaseControllerTest {
 
     @Autowired
     PasswordEncoder passwordEncoder;
-
-    @Autowired
-    AppProperties appProperties;
 
     @Autowired
     ModelMapper modelMapper;
@@ -109,7 +105,6 @@ public class AccountControllerTests extends BaseControllerTest {
 
     @Test
     public void 유저_수정_테스트() {
-
         AccountDto accountDto = createAccountDto();
 
         webTestClient.post()
@@ -166,18 +161,6 @@ public class AccountControllerTests extends BaseControllerTest {
                 .exchange()
                 .expectStatus()
                 .isOk();
-    }
-
-    private AccountDto createAccountDto() {
-        return AccountDto.builder()
-                .username(appProperties.getTestUsername())
-                .nickname(appProperties.getTestNickname())
-                .email(appProperties.getTestEmail())
-                .password(appProperties.getTestPassword())
-                .birthDate(Date.from(Instant.now()))
-                .createdDate(LocalDateTime.now())
-                .roles(Arrays.asList(Role.USER))
-                .build();
     }
 
     private AccountDto updateAccountDto() {

@@ -2,6 +2,8 @@ package me.dblab.twitterclone.tweet;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BeanPropertyBindingResult;
+import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -12,8 +14,11 @@ public class TweetController {
 
     private final TweetService tweetService;
 
-    public TweetController(TweetService tweetService) {
+    private final TweetValidator tweetValidator;
+
+    public TweetController(TweetService tweetService, TweetValidator tweetValidator) {
         this.tweetService = tweetService;
+        this.tweetValidator = tweetValidator;
     }
 
     @GetMapping
@@ -27,13 +32,19 @@ public class TweetController {
     }
 
     @PostMapping
-    public Mono<ResponseEntity> saveTweet(@RequestBody Tweet tweet) {
-        return tweetService.saveTweet(tweet);
+    public Mono<ResponseEntity> saveTweet(@RequestBody TweetDto tweetDto) {
+        if (this.validate(tweetDto)) {
+            return Mono.just(ResponseEntity.badRequest().build());
+        }
+        return tweetService.saveTweet(tweetDto);
     }
 
     @PutMapping(value = "/{id}")
-    public Mono<ResponseEntity> updateTweet(@PathVariable String id, @RequestBody Tweet tweet) {
-        return tweetService.updateTweet(id, tweet);
+    public Mono<ResponseEntity> updateTweet(@PathVariable String id, @RequestBody TweetDto tweetDto) {
+        if (this.validate(tweetDto)) {
+            return Mono.just(ResponseEntity.badRequest().build());
+        }
+        return tweetService.updateTweet(id, tweetDto);
     }
 
     @DeleteMapping(value = "/{id}")
@@ -41,4 +52,14 @@ public class TweetController {
     public Mono<Void> deleteTweet(@PathVariable String id) {
         return tweetService.deleteTweet(id);
     }
+
+    private boolean validate(TweetDto tweetDto) {
+        Errors errors = new BeanPropertyBindingResult(tweetDto, "Tweet");
+        this.tweetValidator.validate(tweetDto, errors);
+        if (errors.hasErrors()) {
+            return true;
+        }
+        return false;
+    }
+
 }

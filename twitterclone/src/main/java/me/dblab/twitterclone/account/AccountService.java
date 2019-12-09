@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -43,6 +44,7 @@ public class AccountService implements ReactiveUserDetailsService {
     public Mono<ResponseEntity> saveAccount(AccountDto accountDto) {
         return Mono.just(accountDto).map(user -> {
             user.setPassword(passwordEncoder.encode(user.getPassword()));
+            user.setRoles(Collections.singletonList(Role.USER));
             return modelMapper.map(user, Account.class);
         })
                 .flatMap(user -> accountRepository.findByEmail(user.getEmail())
@@ -78,8 +80,8 @@ public class AccountService implements ReactiveUserDetailsService {
 
     }
 
-    public void deleteAccount(String id) {
-        accountRepository.deleteById(id);
+    public Mono<Void> deleteAccount(String id) {
+        return accountRepository.deleteById(id);
     }
 
     @Override
@@ -90,9 +92,10 @@ public class AccountService implements ReactiveUserDetailsService {
     }
 
     private Collection<? extends GrantedAuthority> authorities(Account account) {
-        List<GrantedAuthority> grantedAuthorities = new ArrayList<>();
-        grantedAuthorities.add(new SimpleGrantedAuthority(account.getRoles().toString()));
-        return grantedAuthorities;
+        return account.getRoles()
+                .stream()
+                .map(role -> new SimpleGrantedAuthority(role.toString()))
+                .collect(Collectors.toList());
     }
 
 

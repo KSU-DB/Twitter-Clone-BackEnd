@@ -1,11 +1,10 @@
 package me.dblab.twitterclone.tweet;
 
 import me.dblab.twitterclone.account.Account;
-import me.dblab.twitterclone.account.AccountRepository;
 import me.dblab.twitterclone.account.AccountService;
+import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -19,9 +18,12 @@ public class TweetService {
 
     private final AccountService accountService;
 
-    public TweetService(TweetRepository tweetRepository, AccountService accountService) {
+    private final ModelMapper modelMapper;
+
+    public TweetService(TweetRepository tweetRepository, AccountService accountService, ModelMapper modelMapper) {
         this.tweetRepository = tweetRepository;
         this.accountService = accountService;
+        this.modelMapper = modelMapper;
     }
 
     public Flux<Tweet> getTweetList() {
@@ -32,21 +34,21 @@ public class TweetService {
         return tweetRepository.findById(id);
     }
 
-    public Mono<ResponseEntity> saveTweet(Tweet tweet) {
-        return Mono.just(tweet).map(tweet1 -> {
-            tweet1.setCreatedDate(LocalDateTime.now());
-            Mono<Account> byEmail = accountService.findCurrentUser();
-            byEmail.doOnNext(tweet1::setAccount).subscribe();
-            return tweet1;
+    public Mono<ResponseEntity> saveTweet(TweetDto tweetDto) {
+        return Mono.just(tweetDto).map(tweet1 -> {
+            Tweet tweet = modelMapper.map(tweetDto, Tweet.class);
+            tweet.setCreatedDate(LocalDateTime.now());
+            accountService.findCurrentUser().doOnNext(tweet::setAccount).subscribe();
+            return tweet;
         }).flatMap(tweetRepository::save)
                 .map(savedTweet -> new ResponseEntity<>(savedTweet, HttpStatus.CREATED));
     }
 
-    public Mono<ResponseEntity> updateTweet(String id, Tweet tweet) {
+    public Mono<ResponseEntity> updateTweet(String id, TweetDto tweetDto) {
         return tweetRepository.findById(id)
                 .switchIfEmpty(Mono.empty())
                 .flatMap(updatedTweet -> {
-                    updatedTweet.setContent(tweet.getContent());
+                    updatedTweet.setContent(tweetDto.getContent());
                     return tweetRepository.save(updatedTweet);
                 }).map(updatedTweet -> new ResponseEntity<>(updatedTweet, HttpStatus.OK));
     }
