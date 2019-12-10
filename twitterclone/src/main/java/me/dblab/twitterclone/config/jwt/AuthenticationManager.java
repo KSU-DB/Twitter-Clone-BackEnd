@@ -41,6 +41,9 @@ public class AuthenticationManager implements ReactiveAuthenticationManager {
             List<String> roles = claims.get(AUTHORITIES_KEY, List.class);
             List authorities = roles.stream()
                     .map(SimpleGrantedAuthority::new).collect(Collectors.toList());
+
+            log.info("SecurityFilter_Username : " + username);
+
             UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(username, null, authorities);
             SecurityContextHolder.getContext().setAuthentication(auth);
 

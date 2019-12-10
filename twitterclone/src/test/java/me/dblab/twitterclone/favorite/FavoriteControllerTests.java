@@ -99,6 +99,7 @@ public class FavoriteControllerTests extends BaseControllerTest {
 
         //----------------------------------트윗 생성 완료 -----------------------------------
 
+        // 각각의 요청마다 SecurityFilter를 동작시키기 위해
         SecurityContextHolder.getContext().setAuthentication(null);
 
     }
@@ -134,7 +135,6 @@ public class FavoriteControllerTests extends BaseControllerTest {
         //----------------------------------유저2 생성 완료 -----------------------------------
 
         log.info(tokenProvider.getUsernameFromToken(jwt.replace("Bearer ", "")));
-
         log.info(tokenProvider.getUsernameFromToken(jwt2.replace("Bearer ", "")));
 
         webTestClient.post()
