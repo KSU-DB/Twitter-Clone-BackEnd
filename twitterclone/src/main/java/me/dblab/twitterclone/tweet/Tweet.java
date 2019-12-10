@@ -1,7 +1,6 @@
 package me.dblab.twitterclone.tweet;
 
 import lombok.*;
-import me.dblab.twitterclone.account.Account;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -19,5 +18,5 @@ public class Tweet {
 
     private LocalDateTime createdDate;
 
-    private Account account;
+    private String authorEmail;
 }
