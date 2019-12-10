@@ -2,6 +2,7 @@ package me.dblab.twitterclone.account;
 
 import me.dblab.twitterclone.common.BaseControllerTest;
 import me.dblab.twitterclone.config.jwt.TokenProvider;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -21,7 +22,8 @@ public class AccountValidateTests extends BaseControllerTest {
     private final String accountUrl = "/api/users";
 
     @Test
-    public void null_검증_테스트()  {
+    @DisplayName("유저 null 검증 테스트")
+    public void null_test()  {
         AccountDto accountDto = AccountDto.builder().build();
 
         webTestClient.post()
@@ -34,7 +36,8 @@ public class AccountValidateTests extends BaseControllerTest {
     }
 
     @Test
-    public void username_length_검증_테스트()    {
+    @DisplayName("username 길이 검증 테스트")
+    public void username_length_test()    {
 
         // 길이 8 미만 일시 BadRequest
         AccountDto accountDto = createAccountDto();
@@ -60,7 +63,8 @@ public class AccountValidateTests extends BaseControllerTest {
     }
 
     @Test
-    public void password_length_검증_테스트()    {
+    @DisplayName("password 길이 검증 테스트")
+    public void password_length_test()    {
 
         // 길이 10 미만 일시 BadRequest
         AccountDto accountDto = createAccountDto();
@@ -76,7 +80,8 @@ public class AccountValidateTests extends BaseControllerTest {
     }
 
     @Test
-    public void email_regex_검증_테스트() {
+    @DisplayName("email 정규 표현식 검증 테스트")
+    public void email_regex_test() {
 
         // '@'가 빠졌을 시 BadRequest
         AccountDto accountDto = createAccountDto();
@@ -113,7 +118,8 @@ public class AccountValidateTests extends BaseControllerTest {
     }
 
     @Test
-    public void password_regex_검증_테스트() {
+    @DisplayName("password 정규표현식 검증 테스트")
+    public void password_regex_test() {
 
         // 영어 소문자 없을 시 BadRequest
         AccountDto accountDto = createAccountDto();

@@ -31,4 +31,13 @@ public class BaseControllerTest {
                 .roles(Collections.singletonList(Role.USER))
                 .build();
     }
+    public AccountDto createAnotherAccountDto() {
+        return AccountDto.builder()
+                .email("another" + appProperties.getTestEmail())
+                .username("another" + appProperties.getTestUsername())
+                .password("another" + appProperties.getTestPassword())
+                .nickname("another" + appProperties.getTestNickname())
+                .roles(Collections.singletonList(Role.USER))
+                .build();
+    }
 }
