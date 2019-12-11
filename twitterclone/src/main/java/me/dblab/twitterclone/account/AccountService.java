@@ -67,16 +67,14 @@ public class AccountService implements ReactiveUserDetailsService {
                 );    
     }
 
-    public Mono<ResponseEntity> login(Mono<Account> account) {
-        return account.flatMap(account1 -> accountRepository.findByEmail(account1.getEmail())
+    public Mono<ResponseEntity> login(Account account) {
+        return Mono.just(account).flatMap(account1 -> accountRepository.findByEmail(account1.getEmail())
                 .map(account2 -> {
                     if (passwordEncoder.matches(account1.getPassword(), account2.getPassword())) {
                         return ResponseEntity.ok().body(tokenProvider.generateToken(account2));
                     }
                     return ResponseEntity.badRequest().build();
-
                 }).switchIfEmpty(Mono.just(ResponseEntity.notFound().build())));
-
     }
 
     public Mono<Void> deleteAccount(String id) {
