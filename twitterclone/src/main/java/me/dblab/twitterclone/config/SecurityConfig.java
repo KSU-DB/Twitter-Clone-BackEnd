@@ -12,13 +12,15 @@ import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.server.SecurityWebFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.reactive.config.CorsRegistry;
+import org.springframework.web.reactive.config.WebFluxConfigurer;
 import reactor.core.publisher.Mono;
 
 @Slf4j
 @EnableWebFluxSecurity
 @Configuration
-public class SecurityConfig {
-
+public class SecurityConfig implements WebFluxConfigurer {
 
     private final AuthenticationManager authenticationManager;
 
@@ -29,12 +31,20 @@ public class SecurityConfig {
         this.securityContextRepository = securityContextRepository;
     }
 
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/**")
+                .allowedOrigins("http://localhost:3000")
+                .allowedMethods(CorsConfiguration.ALL)
+                .allowedHeaders(CorsConfiguration.ALL);
+    }
+
     @Bean
     SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
         String userApi = "/api/users";
         String[] patterns = new String[]{userApi, userApi + "/login"};
 
-        return http.cors().disable()
+        return http
                 .exceptionHandling()
                 .authenticationEntryPoint((swe, e) -> Mono.fromRunnable(() ->
                     swe.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED)
