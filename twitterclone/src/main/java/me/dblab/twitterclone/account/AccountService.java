@@ -46,8 +46,7 @@ public class AccountService implements ReactiveUserDetailsService {
             user.setPassword(passwordEncoder.encode(user.getPassword()));
             user.setRoles(Collections.singletonList(Role.USER));
             return modelMapper.map(user, Account.class);
-        })
-                .flatMap(user -> accountRepository.findByEmail(user.getEmail())
+        }).flatMap(user -> accountRepository.findByEmail(user.getEmail())
                         .map(dupUser -> ResponseEntity.badRequest().build())
                         .switchIfEmpty(accountRepository.save(user)
                                 .map(saveUser -> new ResponseEntity<>(saveUser, HttpStatus.CREATED))));

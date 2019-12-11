@@ -19,6 +19,9 @@ import org.springframework.http.MediaType;
 import org.springframework.security.core.context.SecurityContextHolder;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
+
+import java.util.stream.IntStream;
+
 import static org.assertj.core.api.BDDAssertions.then;
 
 @Slf4j
@@ -164,14 +167,14 @@ public class FavoriteControllerTests extends BaseControllerTest {
 
     }
 
+    @Test
+    @DisplayName("10명의 유저 생성 후 좋아요 테스트")
+    public void save_10_user_and_favorites()    {
+    }
+
     private Account currentAccount() throws Exception {
         Mono<Account> byEmail = accountRepository.findByEmail(tokenProvider.getUsernameFromToken(jwt.replace("Bearer ", "")));
         return byEmail.block();
-    }
-
-    private Account currentAnotherAccount() throws Exception {
-        Mono<Account> byEmail2 = accountRepository.findByEmail(tokenProvider.getUsernameFromToken(jwt2.replace("Bearer ", "")));
-        return byEmail2.block();
     }
 
     private TweetDto tweetBuilder() {
@@ -179,15 +182,5 @@ public class FavoriteControllerTests extends BaseControllerTest {
         tweetDto.setContent("경성대학교 C동 528호");
         return tweetDto;
     }
-
-//    public AccountDto createAnotherAccountDto() {
-//        return AccountDto.builder()
-//                .email("another" + appProperties.getTestEmail())
-//                .username("another" + appProperties.getTestUsername())
-//                .password("another" + appProperties.getTestPassword())
-//                .nickname("another" + appProperties.getTestNickname())
-//                .roles(Collections.singletonList(Role.USER))
-//                .build();
-//    }
 
 }
