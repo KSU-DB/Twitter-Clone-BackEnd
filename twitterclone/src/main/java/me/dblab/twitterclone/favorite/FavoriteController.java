@@ -16,11 +16,6 @@ public class FavoriteController {
         this.favoriteService = favoriteService;
     }
 
-//    @GetMapping("/{id}")
-//    public Flux<Favorite> getLikes(@PathVariable String tweedId) {
-//        return favoriteService.getLike(tweedId);
-//    }
-
     @PostMapping("/{tweetId}")
     public Mono<ResponseEntity> likeTweet(@PathVariable String tweetId)   {
         return favoriteService.saveLike(tweetId);
