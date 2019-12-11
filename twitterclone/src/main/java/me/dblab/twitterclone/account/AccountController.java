@@ -36,7 +36,6 @@ public class AccountController {
 
     private void validate(AccountDto accountDto) {
         Errors errors = new BeanPropertyBindingResult(accountDto, "account");
-        log.info("controller validate");
         accountValidator.validate(accountDto, errors);
         if (errors.hasErrors()) {
             log.info("controller validate errors");

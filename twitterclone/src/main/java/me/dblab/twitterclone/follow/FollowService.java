@@ -39,7 +39,7 @@ public class FollowService {
         return followRepository.deleteById(id);
     }
 
-    public Flux<Follow> findFollowingEmail(String userEmail) {
-        return followRepository.findAllByFollowerEmail(userEmail);
+    public Flux<Follow> findFollowingEmails(String followerEmail) {
+        return followRepository.findAllByFollowerEmail(followerEmail);
     }
 }
