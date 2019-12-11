@@ -2,6 +2,7 @@ package me.dblab.twitterclone.account;
 
 import me.dblab.twitterclone.common.BaseControllerTest;
 import me.dblab.twitterclone.config.jwt.TokenProvider;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +33,8 @@ public class AccountControllerTests extends BaseControllerTest {
     private final String BEARER = "Bearer ";
 
     @Test
-    public void 유저_저장_테스트() {
+    @DisplayName("유저 저장 테스트")
+    public void save_user_test() {
         AccountDto accountDto = createAccountDto();
 
         webTestClient.post()
@@ -55,7 +57,8 @@ public class AccountControllerTests extends BaseControllerTest {
     }
 
     @Test
-    public void 유저_중복_테스트()   {
+    @DisplayName("유저 중복 테스트")
+    public void user_duplication_test()   {
         AccountDto accountDto = createAccountDto();
 
         webTestClient.post()
@@ -75,7 +78,8 @@ public class AccountControllerTests extends BaseControllerTest {
     }
 
     @Test
-    public void 유저_불러오기_테스트() {
+    @DisplayName("유저 불러오기 테스트")
+    public void load_user_test() {
         AccountDto accountDto = createAccountDto();
 
         webTestClient.post()
@@ -99,7 +103,8 @@ public class AccountControllerTests extends BaseControllerTest {
     }
 
     @Test
-    public void 유저_수정_테스트() {
+    @DisplayName("유저 수정 테스트")
+    public void update_user_test() {
         AccountDto accountDto = createAccountDto();
 
         webTestClient.post()
@@ -135,7 +140,8 @@ public class AccountControllerTests extends BaseControllerTest {
     }
 
     @Test
-    public void 유저_삭제_테스트() {
+    @DisplayName("유저 삭제 테스트")
+    public void delete_user_test() {
         AccountDto accountDto = createAccountDto();
 
         webTestClient.post()

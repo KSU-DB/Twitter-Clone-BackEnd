@@ -2,12 +2,8 @@ package me.dblab.twitterclone.account;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
-import me.dblab.twitterclone.tweet.Tweet;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.security.core.userdetails.UserDetails;
-import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
 import java.util.Date;
@@ -22,6 +18,7 @@ public class Account {
     private String id;
     private String username;
     private String nickname;
+    @JsonIgnore
     private String password;
     private String email;
     private Date birthDate;
