@@ -1,5 +1,6 @@
 package me.dblab.twitterclone.config.jwt;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.reactive.ServerHttpRequest;
@@ -15,14 +16,11 @@ import reactor.core.publisher.Mono;
 import static me.dblab.twitterclone.common.Constants.TOKEN_PREFIX;
 
 @Component
+@RequiredArgsConstructor
 @Slf4j
 public class SecurityContextRepository implements ServerSecurityContextRepository {
 
     private final AuthenticationManager authenticationManager;
-
-    public SecurityContextRepository(AuthenticationManager authenticationManager) {
-        this.authenticationManager = authenticationManager;
-    }
 
     @Override
     public Mono<Void> save(ServerWebExchange exchange, SecurityContext context) {

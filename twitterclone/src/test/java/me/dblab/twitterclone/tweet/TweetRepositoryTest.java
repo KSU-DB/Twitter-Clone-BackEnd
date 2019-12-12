@@ -40,7 +40,7 @@ public class TweetRepositoryTest {
     }
 
     @Test
-    public void createTweetTest2() {
+    public void createTweetTest_notCreated() {
         Tweet tweet = Tweet.builder().id(UUID.randomUUID().toString()).content("test content").createdDate(LocalDateTime.now()).build();
 
         //save
@@ -50,7 +50,6 @@ public class TweetRepositoryTest {
         Mono<Tweet> byId = tweetRepository.findById(tweet.getId());
         //verify
         StepVerifier.create(byId)
-                .assertNext(index -> assertThat(index.getContent()).isEqualTo("test content"))
                 .verifyComplete();
     }
 }

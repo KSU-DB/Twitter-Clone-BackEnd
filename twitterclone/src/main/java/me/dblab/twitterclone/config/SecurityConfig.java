@@ -1,5 +1,6 @@
 package me.dblab.twitterclone.config;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.dblab.twitterclone.config.jwt.AuthenticationManager;
 import me.dblab.twitterclone.config.jwt.SecurityContextRepository;
@@ -17,7 +18,7 @@ import org.springframework.web.reactive.config.CorsRegistry;
 import org.springframework.web.reactive.config.WebFluxConfigurer;
 import reactor.core.publisher.Mono;
 
-@Slf4j
+@Slf4j @RequiredArgsConstructor
 @EnableWebFluxSecurity
 @Configuration
 public class SecurityConfig implements WebFluxConfigurer {
@@ -25,11 +26,6 @@ public class SecurityConfig implements WebFluxConfigurer {
     private final AuthenticationManager authenticationManager;
 
     private final SecurityContextRepository securityContextRepository;
-
-    public SecurityConfig(AuthenticationManager authenticationManager, SecurityContextRepository securityContextRepository) {
-        this.authenticationManager = authenticationManager;
-        this.securityContextRepository = securityContextRepository;
-    }
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {

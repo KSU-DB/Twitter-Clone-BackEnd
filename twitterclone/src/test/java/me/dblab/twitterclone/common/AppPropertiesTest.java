@@ -18,7 +18,7 @@ public class AppPropertiesTest {
     @Test
     public void appPropertiesTest() {
         then(appProperties.getTestUsername()).isEqualTo("testUsername");
-        then(appProperties.getTestPassword()).isEqualTo("testPassword");
+        then(appProperties.getTestPassword()).isEqualTo("Didrltjr3!@");
         then(appProperties.getTestEmail()).isEqualTo("test@gmail.com");
     }
 

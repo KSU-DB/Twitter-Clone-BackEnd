@@ -1,5 +1,6 @@
 package me.dblab.twitterclone.tweet;
 
+import lombok.RequiredArgsConstructor;
 import me.dblab.twitterclone.account.Account;
 import me.dblab.twitterclone.account.AccountService;
 import me.dblab.twitterclone.follow.FollowService;
@@ -13,6 +14,7 @@ import reactor.core.publisher.Mono;
 import java.time.LocalDateTime;
 
 @Service
+@RequiredArgsConstructor
 public class TweetService {
 
     private final TweetRepository tweetRepository;
@@ -22,13 +24,6 @@ public class TweetService {
     private final ModelMapper modelMapper;
 
     private final FollowService followService;
-
-    public TweetService(TweetRepository tweetRepository, AccountService accountService, ModelMapper modelMapper, FollowService followService) {
-        this.tweetRepository = tweetRepository;
-        this.accountService = accountService;
-        this.modelMapper = modelMapper;
-        this.followService = followService;
-    }
 
     public Flux<Tweet> getTweetList() {
         Mono<Account> currentUser = accountService.findCurrentUser();

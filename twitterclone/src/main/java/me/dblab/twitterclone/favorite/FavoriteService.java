@@ -1,5 +1,6 @@
 package me.dblab.twitterclone.favorite;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.dblab.twitterclone.account.Account;
 import me.dblab.twitterclone.account.AccountRepository;
@@ -14,6 +15,7 @@ import reactor.core.publisher.Mono;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class FavoriteService {
 
     private final FavoriteRepository favoriteRepository;
@@ -21,12 +23,6 @@ public class FavoriteService {
     private final TweetRepository tweetRepository;
     private final AccountRepository accountRepository;
 
-    public FavoriteService(FavoriteRepository favoriteRepository, AccountService accountService, TweetRepository tweetRepository, AccountRepository accountRepository) {
-        this.favoriteRepository = favoriteRepository;
-        this.accountService = accountService;
-        this.tweetRepository = tweetRepository;
-        this.accountRepository = accountRepository;
-    }
 
     public Flux<Account> getAccounts(String tweetId) {
         Mono<Tweet> tweetMono = tweetRepository.findById(tweetId);

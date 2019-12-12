@@ -2,6 +2,7 @@ package me.dblab.twitterclone.account;
 
 import me.dblab.twitterclone.common.BaseControllerTest;
 import me.dblab.twitterclone.config.jwt.TokenProvider;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +21,11 @@ public class AccountValidateTests extends BaseControllerTest {
     PasswordEncoder passwordEncoder;
 
     private final String accountUrl = "/api/users";
+
+    @BeforeEach
+    public void setUp() {
+        accountRepository.deleteAll().subscribe();
+    }
 
     @Test
     @DisplayName("유저 null 검증 테스트")
