@@ -1,7 +1,6 @@
 package me.dblab.twitterclone.tweet;
 
 import lombok.*;
-import org.springframework.boot.context.properties.bind.DefaultValue;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 

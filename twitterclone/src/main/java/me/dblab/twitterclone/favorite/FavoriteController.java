@@ -1,8 +1,10 @@
 package me.dblab.twitterclone.favorite;
 
 import lombok.RequiredArgsConstructor;
+import me.dblab.twitterclone.account.Account;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
@@ -11,6 +13,11 @@ import reactor.core.publisher.Mono;
 public class FavoriteController {
 
     private final FavoriteService favoriteService;
+
+    @GetMapping("/{tweetId}")
+    public Flux<Account> getLikeAccounts(@PathVariable String tweetId)   {
+        return favoriteService.getAccounts(tweetId);
+    }
 
     @PostMapping("/{tweetId}")
     public Mono<ResponseEntity> likeTweet(@PathVariable String tweetId)   {

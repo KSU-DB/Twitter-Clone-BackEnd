@@ -21,7 +21,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -61,6 +60,7 @@ public class FavoriteControllerTests extends BaseControllerTest {
     private final String favoriteUrl = "/api/tweet/favorites";
     private String jwt;
     private String jwt2;
+    private String[] jwt3 = new String[31];
     Tweet tweet;
     String accountUrl = "/api/users";
     Mono<Tweet> byAccountId;
@@ -120,8 +120,9 @@ public class FavoriteControllerTests extends BaseControllerTest {
     }
 
     @Test
-    @DisplayName("좋아요 테스트")
-    public void save_favorite() throws Exception {
+    @Disabled
+    @DisplayName("1명의 유저 생성 후 좋아요 테스트")
+    public void save_account_favorite() throws Exception {
 
         AccountDto anotherAccount = createAnotherAccountDto();
 
@@ -143,9 +144,6 @@ public class FavoriteControllerTests extends BaseControllerTest {
                 }).verifyComplete();
 
         jwt2 = "Bearer " + tokenProvider.generateToken(byEmail2.block());
-
-        log.info("유저 2 생성 완료");
-        log.info("유저 2 토큰 : " + jwt2);
 
         //----------------------------------유저2 생성 완료 -----------------------------------
 
@@ -175,13 +173,11 @@ public class FavoriteControllerTests extends BaseControllerTest {
                 })
                 .verifyComplete();
 
-        log.info("마지막 검증 완료");
-
     }
 
     @Test
-    @DisplayName("300명의 유저 생성 후 좋아요 테스트")
-    public void save_300_user_and_favorites()  {
+    @DisplayName("30명의 user 저장 & 좋아요(30개) & 좋아요 카운트 & 30명이 누른 좋아요 취소")
+    public void save_accounts_favorites_AND_delete_favorites()   {
 
         IntStream.rangeClosed(1, 30).forEach(i -> {
 
@@ -204,7 +200,7 @@ public class FavoriteControllerTests extends BaseControllerTest {
                         then(acc.getEmail()).isEqualTo(createEmail(i));
                     }).verifyComplete();
 
-            jwt2 = "Bearer " + tokenProvider.generateToken(account);
+            jwt3[i] = "Bearer " + tokenProvider.generateToken(account);
 
             SecurityContextHolder.getContext().setAuthentication(null);
 
@@ -212,7 +208,7 @@ public class FavoriteControllerTests extends BaseControllerTest {
 
             webTestClient.post()
                     .uri(favoriteUrl + "/" + tweet.getId())
-                    .header(HttpHeaders.AUTHORIZATION, jwt2)
+                    .header(HttpHeaders.AUTHORIZATION, jwt3[i])
                     .exchange()     // request 요청 & response 반환
                     .expectStatus()
                     .isCreated()
@@ -234,7 +230,7 @@ public class FavoriteControllerTests extends BaseControllerTest {
 
             log.info("좋아요가 눌러진 트윗 Id : " + favorited.getTweetId());
             log.info("좋아요 누른 유저의 이메일 : " + favorited.getAccountEmail());
-            log.info(String.valueOf(tweet.getCountLike()));
+            log.info("좋아요 count : " + tweet.getCountLike());
 
             StepVerifier.create(byId)
                     .assertNext(favorite -> {
@@ -243,6 +239,42 @@ public class FavoriteControllerTests extends BaseControllerTest {
                     })
                     .verifyComplete();
         });
+
+        // ------------------------------- 좋아요 확인-----------------------------------
+
+        webTestClient.get()
+                .uri(favoriteUrl + "/" + tweet.getId())
+                .header(HttpHeaders.AUTHORIZATION, jwt)
+                .exchange()
+                .expectStatus()
+                .isOk();
+
+        // ------------------------------- 좋아요 불러오기 -----------------------------------
+
+        IntStream.rangeClosed(1, 30).forEach(i -> {
+            SecurityContextHolder.getContext().setAuthentication(null);
+            Mono<Favorite> favoriteMono = favoriteRepository.findByAccountEmail(createEmail(i));
+            Favorite favorite = favoriteMono.block();
+
+            webTestClient.delete()
+                    .uri(favoriteUrl + "/" + favorite.getId())
+                    .header(HttpHeaders.AUTHORIZATION, jwt3[i])
+                    .exchange()
+                    .expectStatus()
+                    .isOk();
+
+            Mono<Tweet> tweetMono = tweetRepository.findById(favorite.getTweetId());
+            Tweet deleteTweet = tweetMono.block();
+
+            // ------------------------------- 좋아요 취소-----------------------------------
+
+            log.info("좋아요 취소된 트윗 Id : " + favorite.getTweetId());
+            log.info("좋아요 취소한 유저의 이메일 : " + favorite.getAccountEmail());
+            log.info("취소 후 좋아요 count : " + Objects.requireNonNull(deleteTweet).getCountLike());
+
+        });
+
+
 
     }
 
