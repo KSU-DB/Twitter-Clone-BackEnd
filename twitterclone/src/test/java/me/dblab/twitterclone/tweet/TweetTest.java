@@ -14,9 +14,6 @@ import static org.assertj.core.api.BDDAssertions.then;
 @ExtendWith(SpringExtension.class)
 public class TweetTest {
 
-    @Autowired
-    TweetRepository tweetRepository;
-
     @Test
     public void tweetBuilder() {
         Tweet tweet = Tweet.builder()
@@ -24,9 +21,6 @@ public class TweetTest {
                 .content("test content")
                 .createdDate(LocalDateTime.now())
                 .build();
-
-        assertThat(tweet).isNotNull();
-        assertThat(tweet.getContent()).isEqualTo("test content");
 
         then(tweet).isNotNull();
         then(tweet.getContent()).isEqualTo("test content")

@@ -1,5 +1,6 @@
 package me.dblab.twitterclone.tweet;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BeanPropertyBindingResult;
@@ -9,17 +10,13 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/tweets")
 public class TweetController {
 
     private final TweetService tweetService;
 
     private final TweetValidator tweetValidator;
-
-    public TweetController(TweetService tweetService, TweetValidator tweetValidator) {
-        this.tweetService = tweetService;
-        this.tweetValidator = tweetValidator;
-    }
 
     @GetMapping
     public Flux<Tweet> getTweetList() {

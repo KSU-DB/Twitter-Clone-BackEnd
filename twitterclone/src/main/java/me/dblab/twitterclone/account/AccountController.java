@@ -1,5 +1,6 @@
 package me.dblab.twitterclone.account;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,16 +12,12 @@ import reactor.core.publisher.Mono;
 
 @Slf4j
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/users")
 public class AccountController {
 
     private final AccountService accountService;
     private final AccountValidator accountValidator;
-
-    public AccountController(AccountService accountService, AccountValidator accountValidator) {
-        this.accountService = accountService;
-        this.accountValidator = accountValidator;
-    }
 
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)

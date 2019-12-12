@@ -2,6 +2,7 @@ package me.dblab.twitterclone.account;
 
 import me.dblab.twitterclone.common.BaseControllerTest;
 import me.dblab.twitterclone.config.jwt.TokenProvider;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.modelmapper.ModelMapper;
@@ -31,6 +32,11 @@ public class AccountControllerTests extends BaseControllerTest {
     private final String accountUrl = "/api/users";
 
     private final String BEARER = "Bearer ";
+
+    @BeforeEach
+    public void setUp() {
+        accountRepository.deleteAll().subscribe();
+    }
 
     @Test
     @DisplayName("유저 저장 테스트")

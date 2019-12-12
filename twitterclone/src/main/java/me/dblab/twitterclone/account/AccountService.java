@@ -1,5 +1,6 @@
 package me.dblab.twitterclone.account;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.dblab.twitterclone.config.jwt.TokenProvider;
 import org.modelmapper.ModelMapper;
@@ -22,20 +23,13 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class AccountService implements ReactiveUserDetailsService {
 
     private final AccountRepository accountRepository;
     private final TokenProvider tokenProvider;
     private final PasswordEncoder passwordEncoder;
     private final ModelMapper modelMapper;
-
-    @Autowired
-    public AccountService(AccountRepository accountRepository, TokenProvider tokenProvider, PasswordEncoder passwordEncoder, ModelMapper modelMapper) {
-        this.accountRepository = accountRepository;
-        this.tokenProvider = tokenProvider;
-        this.passwordEncoder = passwordEncoder;
-        this.modelMapper = modelMapper;
-    }
 
     Mono<Account> getAccount(String id) {
         return accountRepository.findById(id);

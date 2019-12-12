@@ -1,6 +1,7 @@
 package me.dblab.twitterclone.config.jwt;
 
 import io.jsonwebtoken.Claims;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -16,14 +17,11 @@ import java.util.stream.Collectors;
 import static me.dblab.twitterclone.common.Constants.AUTHORITIES_KEY;
 
 @Component
+@RequiredArgsConstructor
 @Slf4j
 public class AuthenticationManager implements ReactiveAuthenticationManager {
 
     private final TokenProvider tokenProvider;
-
-    public AuthenticationManager(TokenProvider tokenProvider) {
-        this.tokenProvider = tokenProvider;
-    }
 
     @Override
     @SuppressWarnings("unchecked") // 알아볼 것
