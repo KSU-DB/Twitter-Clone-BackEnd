@@ -18,7 +18,6 @@ public class Account {
     private String id;
     private String username;
     private String nickname;
-    @JsonIgnore
     private String password;
     private String email;
     private Date birthDate;
