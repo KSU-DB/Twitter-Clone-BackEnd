@@ -32,8 +32,10 @@ public class TweetService {
 
     public Flux<Tweet> getTweetList() {
         Mono<Account> currentUser = accountService.findCurrentUser();
-        return currentUser.flatMapMany(cu -> followService.findFollowingEmails(cu.getEmail()))
+        Flux<Tweet> currentUserTweet = currentUser.flatMapMany(cu -> tweetRepository.findAllByAuthorEmail(cu.getEmail()));
+        Flux<Tweet> followingUserTweet = currentUser.flatMapMany(cu -> followService.findFollowingEmails(cu.getEmail()))
                 .flatMap(follow -> tweetRepository.findAllByAuthorEmailOrderByCreatedDateDesc(follow.getFollowingEmail()));
+        return currentUserTweet.mergeWith(followingUserTweet);
     }
 
     public Mono<Tweet> getTweet(String id) {

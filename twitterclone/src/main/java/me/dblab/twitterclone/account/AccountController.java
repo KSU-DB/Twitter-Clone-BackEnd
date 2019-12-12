@@ -38,14 +38,12 @@ public class AccountController {
         Errors errors = new BeanPropertyBindingResult(accountDto, "account");
         accountValidator.validate(accountDto, errors);
         if (errors.hasErrors()) {
-            log.info("controller validate errors");
             throw new ServerWebInputException(errors.toString());
         }
     }
 
     @PostMapping("/login")
-    public Mono<ResponseEntity> login(@RequestBody Mono<Account> account) {
-        log.info("controller login");
+    public Mono<ResponseEntity> login(@RequestBody Account account) {
         return accountService.login(account);
     }
 
