@@ -50,15 +50,22 @@ public class TweetService {
 
     public Mono<ResponseEntity> updateTweet(String id, TweetDto tweetDto) {
         return tweetRepository.findById(id)
-                .switchIfEmpty(Mono.empty())
                 .flatMap(updatedTweet -> {
                     updatedTweet.setContent(tweetDto.getContent());
                     return tweetRepository.save(updatedTweet);
                 }).map(updatedTweet -> new ResponseEntity<>(updatedTweet, HttpStatus.OK));
     }
 
-    public Mono<Void> deleteTweet(String id) {
-        return tweetRepository.deleteById(id);
+    public Mono<ResponseEntity> deleteTweet(String id) {
+        return accountService.findCurrentUser()
+                .flatMap(account ->
+                    tweetRepository.findById(id).flatMap(tweet -> {
+                        if (tweet.getAuthorEmail().equals(account.getEmail())) {
+                            return tweetRepository.deleteById(id).map(i -> ResponseEntity.ok().build());
+                        }
+                        return Mono.just(ResponseEntity.badRequest().build());
+                    })
+                );
     }
 
 }

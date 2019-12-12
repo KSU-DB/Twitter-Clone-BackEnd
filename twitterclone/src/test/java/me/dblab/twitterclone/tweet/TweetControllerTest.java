@@ -1,6 +1,10 @@
 package me.dblab.twitterclone.tweet;
 
-import me.dblab.twitterclone.account.*;
+import lombok.extern.slf4j.Slf4j;
+import me.dblab.twitterclone.account.Account;
+import me.dblab.twitterclone.account.AccountDto;
+import me.dblab.twitterclone.account.AccountRepository;
+import me.dblab.twitterclone.account.AccountService;
 import me.dblab.twitterclone.common.BaseControllerTest;
 import me.dblab.twitterclone.config.jwt.TokenProvider;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,12 +18,12 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-import java.util.Collections;
 import java.util.Objects;
 import java.util.stream.IntStream;
 
 import static org.assertj.core.api.BDDAssertions.then;
 
+@Slf4j
 public class TweetControllerTest extends BaseControllerTest {
 
     @Autowired
@@ -100,14 +104,57 @@ public class TweetControllerTest extends BaseControllerTest {
 
         Flux<Tweet> allByAccount = tweetRepository.findAllByAuthorEmail(currentAccount());
         allByAccount.doOnNext(tweet -> webTestClient.delete()
-                    .uri(tweetUrl + "/" + tweet.getId())
-                    .header(HttpHeaders.AUTHORIZATION, jwt)
-                    .exchange()
-                    .expectStatus()
-                    .isOk()
+                .uri(tweetUrl + "/" + tweet.getId())
+                .header(HttpHeaders.AUTHORIZATION, jwt)
+                .exchange()
+                .expectStatus()
+                .isOk()
         ).subscribe(tweet -> StepVerifier.create(tweetRepository.findById(tweet.getId()))
                 .verifyComplete());
+    }
 
+    @Test
+    @DisplayName("다른 사용자의 게시물을 삭제")
+    public void deleteTweet_with_bad_request() throws Exception {
+        //트윗 생성
+        TweetDto tweetDto = tweetBuilder();
+        createTweet(tweetDto);
+
+        //유저1의 tweet들을 불러온다.
+        Flux<Tweet> allByAccount = tweetRepository.findAllByAuthorEmail(currentAccount());
+
+        StepVerifier.create(allByAccount)
+                .assertNext(tweet -> then(tweet.getAuthorEmail()).isEqualTo(appProperties.getTestEmail()))
+                .verifyComplete();
+
+        //Authentication을 비움
+        SecurityContextHolder.getContext().setAuthentication(null);
+
+        //유저2 생성
+        AccountDto account = createAccountDto(2);
+
+        //유저2 등록
+        webTestClient.post()
+                .uri(accountUrl)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(Mono.just(account), AccountDto.class)
+                .exchange()
+                .expectStatus()
+                .isCreated();
+
+        //db에서 유저2를 불러온다.
+        Mono<Account> byEmail = accountRepository.findByEmail(createEmail(2));
+        String jwt2 = "Bearer " + tokenProvider.generateToken(byEmail.block());
+
+        Tweet tweet1 = allByAccount.blockLast();
+
+        //유저1의 게시물을 유저2가 삭제 요청을 한다.
+        webTestClient.delete()
+                .uri(tweetUrl + "/" + tweet1.getId())
+                .header(HttpHeaders.AUTHORIZATION, jwt2)
+                .exchange()
+                .expectStatus()
+                .isBadRequest();
     }
 
     @Test
@@ -150,10 +197,10 @@ public class TweetControllerTest extends BaseControllerTest {
                     .expectBody()
                     .jsonPath("content", update_content);
         }).subscribe(tweet -> StepVerifier.create(tweetRepository.findById(tweet.getId()))
-                                .assertNext(tweet1 -> {
-                                    then(tweet1.getId()).isEqualTo(tweet.getId());
-                                    then(tweet1.getContent()).isEqualTo(update_content);
-                                }).verifyComplete());
+                .assertNext(tweet1 -> {
+                    then(tweet1.getId()).isEqualTo(tweet.getId());
+                    then(tweet1.getContent()).isEqualTo(update_content);
+                }).verifyComplete());
     }
 
     @Test
@@ -188,9 +235,9 @@ public class TweetControllerTest extends BaseControllerTest {
 
         //검증
         IntStream.rangeClosed(1, 10).forEach(index ->
-            StepVerifier.create(tweetRepository.findAllByAuthorEmail(createEmail(index)))
-                    .assertNext(tweet -> then(tweet.getAuthorEmail()).isEqualTo(createEmail(index)))
-                    .verifyComplete()
+                StepVerifier.create(tweetRepository.findAllByAuthorEmail(createEmail(index)))
+                        .assertNext(tweet -> then(tweet.getAuthorEmail()).isEqualTo(createEmail(index)))
+                        .verifyComplete()
         );
 
         Mono<Account> byEmail = accountRepository.findByEmail(appProperties.getTestEmail());
@@ -198,12 +245,12 @@ public class TweetControllerTest extends BaseControllerTest {
         Account account = byEmail.block();
         jwt = "Bearer " + tokenProvider.generateToken(account);
         IntStream.rangeClosed(1, 5).forEach(index ->
-            webTestClient.post()
-                    .uri("/api/follows/" + createEmail(index))
-                    .header(HttpHeaders.AUTHORIZATION, jwt)
-                    .exchange()
-                    .expectStatus()
-                    .isCreated()
+                webTestClient.post()
+                        .uri("/api/follows/" + createEmail(index))
+                        .header(HttpHeaders.AUTHORIZATION, jwt)
+                        .exchange()
+                        .expectStatus()
+                        .isCreated()
         );
 
         //검증
@@ -218,9 +265,9 @@ public class TweetControllerTest extends BaseControllerTest {
 
         IntStream.rangeClosed(1, 5)
                 .forEach(index ->
-                    StepVerifier.create(tweetRepository.findAllByAuthorEmailOrderByCreatedDateDesc(createEmail(index)))
-                            .assertNext(tweet -> then(tweet.getAuthorEmail()).isEqualTo(createEmail(index)))
-                            .verifyComplete()
+                        StepVerifier.create(tweetRepository.findAllByAuthorEmailOrderByCreatedDateDesc(createEmail(index)))
+                                .assertNext(tweet -> then(tweet.getAuthorEmail()).isEqualTo(createEmail(index)))
+                                .verifyComplete()
                 );
     }
 
@@ -277,7 +324,6 @@ public class TweetControllerTest extends BaseControllerTest {
                 .username(appProperties.getTestUsername())
                 .password(appProperties.getTestPassword())
                 .nickname(appProperties.getTestNickname())
-                .roles(Collections.singletonList(Role.USER))
                 .build();
     }
 }
