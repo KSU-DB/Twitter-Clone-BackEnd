@@ -240,6 +240,17 @@ public class FavoriteControllerTests extends BaseControllerTest {
                     .verifyComplete();
         });
 
+        // ------------------------------- 좋아요 확인-----------------------------------
+
+        webTestClient.get()
+                .uri(favoriteUrl + "/" + tweet.getId())
+                .header(HttpHeaders.AUTHORIZATION, jwt)
+                .exchange()
+                .expectStatus()
+                .isOk();
+
+        // ------------------------------- 좋아요 불러오기 -----------------------------------
+
         IntStream.rangeClosed(1, 30).forEach(i -> {
             SecurityContextHolder.getContext().setAuthentication(null);
             Mono<Favorite> favoriteMono = favoriteRepository.findByAccountEmail(createEmail(i));
@@ -262,6 +273,8 @@ public class FavoriteControllerTests extends BaseControllerTest {
             log.info("취소 후 좋아요 count : " + Objects.requireNonNull(deleteTweet).getCountLike());
 
         });
+
+
 
     }
 
