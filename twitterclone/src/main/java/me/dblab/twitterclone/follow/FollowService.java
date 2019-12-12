@@ -1,5 +1,6 @@
 package me.dblab.twitterclone.follow;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.dblab.twitterclone.account.Account;
 import me.dblab.twitterclone.account.AccountService;
@@ -13,17 +14,13 @@ import reactor.core.publisher.Mono;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 @Slf4j
 public class FollowService {
 
     private final FollowRepository followRepository;
 
     private final AccountService accountService;
-
-    public FollowService(FollowRepository followRepository, AccountService accountService) {
-        this.followRepository = followRepository;
-        this.accountService = accountService;
-    }
 
     public Mono<ResponseEntity> following(String email) {
         Mono<Account> currentUser = accountService.findCurrentUser();

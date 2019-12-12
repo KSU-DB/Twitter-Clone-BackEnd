@@ -21,7 +21,6 @@ import java.util.Optional;
 import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.fail;
-import static org.assertj.core.api.BDDAssertions.then;
 
 public class FollowControllerTest extends BaseControllerTest {
 
@@ -46,34 +45,23 @@ public class FollowControllerTest extends BaseControllerTest {
     @BeforeEach
     public void setUp() {
         accountRepository.deleteAll().then(followRepository.deleteAll()).subscribe();
-        //유저 생성
-        AccountDto accountDto = createAccountDto(0);
-        //유저 등록
-        accountService.saveAccount(accountDto).subscribe();
-
-        Mono<Account> byEmail = accountRepository.findByEmail(createEmail(0));
-        StepVerifier.create(byEmail)
-                .assertNext(e -> {
-                    then(e).isNotNull();
-                    then(e.getEmail()).isEqualTo(createEmail(0));
-                }).verifyComplete();
-
-        Account map = modelMapper.map(accountDto, Account.class);
-        jwt = "Bearer " + tokenProvider.generateToken(map);
 
         //30개의 유저 생성(팔로잉할 유저)
-        IntStream.rangeClosed(1, 30).forEach(index -> {
+        IntStream.rangeClosed(0, 30).forEach(index -> {
             //유저 생성
             AccountDto following = createAccountDto(index);
             //유저 등록
             accountService.saveAccount(following).subscribe();
-            //검증
-            StepVerifier.create(accountRepository.findByEmail(createEmail(index)))
-                    .assertNext(fu -> {
-                        then(fu).isNotNull();
-                        then(fu.getEmail()).isEqualTo(createEmail(index));
-                    }).verifyComplete();
         });
+
+        //검증
+        StepVerifier.create(accountRepository.findAll())
+                .expectNextCount(31L)
+                .verifyComplete();
+
+        //jwt 생성
+        Account block = accountRepository.findByEmail(createEmail(0)).block();
+        jwt = "Bearer " + tokenProvider.generateToken(block);
     }
 
     @Test
