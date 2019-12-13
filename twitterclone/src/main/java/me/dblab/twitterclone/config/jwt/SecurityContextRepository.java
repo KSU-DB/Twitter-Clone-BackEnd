@@ -14,7 +14,11 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 import static me.dblab.twitterclone.common.Constants.TOKEN_PREFIX;
-
+/**
+ * Reference
+ * https://github.com/ard333/spring-boot-webflux-jjwt
+ * https://www.devglan.com/spring-security/spring-security-webflux-jwt
+ */
 @Component
 @RequiredArgsConstructor
 @Slf4j

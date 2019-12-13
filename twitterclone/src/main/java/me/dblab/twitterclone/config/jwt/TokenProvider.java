@@ -15,7 +15,11 @@ import java.util.function.Function;
 
 import static me.dblab.twitterclone.common.Constants.ACCESS_TOKEN_VALIDITY_SECONDS;
 import static me.dblab.twitterclone.common.Constants.SIGNING_KEY;
-
+/**
+ * Reference
+ * https://github.com/ard333/spring-boot-webflux-jjwt
+ * https://www.devglan.com/spring-security/spring-security-webflux-jwt
+ */
 @Component
 @Slf4j
 public class TokenProvider {
