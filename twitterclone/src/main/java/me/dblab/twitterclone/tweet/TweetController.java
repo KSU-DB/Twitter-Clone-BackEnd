@@ -45,8 +45,7 @@ public class TweetController {
     }
 
     @DeleteMapping(value = "/{id}")
-    @ResponseStatus(HttpStatus.OK)
-    public Mono<Void> deleteTweet(@PathVariable String id) {
+    public Mono<ResponseEntity> deleteTweet(@PathVariable String id) {
         return tweetService.deleteTweet(id);
     }
 
