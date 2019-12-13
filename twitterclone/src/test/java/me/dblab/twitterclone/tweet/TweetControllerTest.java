@@ -19,6 +19,7 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import java.util.Objects;
+import java.util.UUID;
 import java.util.stream.IntStream;
 
 import static org.assertj.core.api.BDDAssertions.then;
@@ -201,6 +202,39 @@ public class TweetControllerTest extends BaseControllerTest {
                     then(tweet1.getId()).isEqualTo(tweet.getId());
                     then(tweet1.getContent()).isEqualTo(update_content);
                 }).verifyComplete());
+    }
+
+    @Test
+    @DisplayName("DB에 없는 트윗의 수정을 요청했을 때")
+    public void updateTweet_400_Bad_Request() throws Exception {
+        //트윗 생성
+        TweetDto tweetDto = tweetBuilder();
+        createTweet(tweetDto);
+
+        Flux<Tweet> allByAccount = tweetRepository.findAllByAuthorEmail(currentAccount());
+
+        //저장되었는지 검증
+        StepVerifier.create(allByAccount)
+                .assertNext(tweet -> then(tweet.getContent()).isEqualTo("경성대학교 C동 528호"))
+                .verifyComplete();
+
+        Tweet tweet2 = allByAccount.blockFirst();
+
+        //임의의 id로 요청
+        webTestClient.put()
+                .uri(tweetUrl + "/" + UUID.randomUUID().toString())
+                .header(HttpHeaders.AUTHORIZATION, jwt)
+                .body(Mono.just(tweetDto), Tweet.class)
+                .exchange()
+                .expectStatus()
+                .isBadRequest();
+
+        //수정이 안됐는지 검증
+       StepVerifier.create(tweetRepository.findById(tweet2.getId()))
+                .assertNext(tweet1 -> {
+                    then(tweet1.getId()).isEqualTo(tweet2.getId());
+                    then(tweet1.getContent()).isEqualTo("경성대학교 C동 528호");
+                }).verifyComplete();
     }
 
     @Test

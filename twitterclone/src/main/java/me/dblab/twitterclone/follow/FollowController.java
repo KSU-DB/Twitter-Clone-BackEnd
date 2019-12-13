@@ -14,7 +14,7 @@ public class FollowController {
     private final FollowService followService;
 
     @PostMapping("/{email}")
-    public Mono<ResponseEntity> following(@PathVariable String email) {
+    public Mono<ResponseEntity<Follow>> following(@PathVariable String email) {
         return followService.following(email);
     }
 

@@ -37,7 +37,7 @@ public class TweetController {
     }
 
     @PutMapping(value = "/{id}")
-    public Mono<ResponseEntity> updateTweet(@PathVariable String id, @RequestBody TweetDto tweetDto) {
+    public Mono<ResponseEntity<Tweet>> updateTweet(@PathVariable String id, @RequestBody TweetDto tweetDto) {
         if (this.validate(tweetDto)) {
             return Mono.just(ResponseEntity.badRequest().build());
         }

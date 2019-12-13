@@ -7,12 +7,14 @@ import me.dblab.twitterclone.account.AccountService;
 import me.dblab.twitterclone.common.BaseControllerTest;
 import me.dblab.twitterclone.config.jwt.TokenProvider;
 import org.hamcrest.Matchers;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
+import org.springframework.security.core.context.SecurityContextHolder;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -21,6 +23,7 @@ import java.util.Optional;
 import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.fail;
+import static org.assertj.core.api.BDDAssertions.then;
 
 public class FollowControllerTest extends BaseControllerTest {
 
@@ -46,7 +49,7 @@ public class FollowControllerTest extends BaseControllerTest {
     public void setUp() {
         accountRepository.deleteAll().then(followRepository.deleteAll()).subscribe();
 
-        //30개의 유저 생성(팔로잉할 유저)
+        //31개의 유저 생성 --> 유저0이 유저1~30을 팔로잉
         IntStream.rangeClosed(0, 30).forEach(index -> {
             //유저 생성
             AccountDto following = createAccountDto(index);
@@ -55,9 +58,11 @@ public class FollowControllerTest extends BaseControllerTest {
         });
 
         //검증
-        StepVerifier.create(accountRepository.findAll())
-                .expectNextCount(31L)
-                .verifyComplete();
+        IntStream.rangeClosed(0, 30).forEach(index ->
+            StepVerifier.create(accountRepository.findByEmail(createEmail(index)))
+                    .assertNext(account -> then(account.getEmail()).isEqualTo(createEmail(index)))
+                    .verifyComplete()
+        );
 
         //jwt 생성
         Account block = accountRepository.findByEmail(createEmail(0)).block();
@@ -83,6 +88,22 @@ public class FollowControllerTest extends BaseControllerTest {
         Flux<Follow> allByFollowerEmail = followRepository.findAllByFollowerEmail(createEmail(0));
         StepVerifier.create(allByFollowerEmail)
                 .expectNextCount(30L)
+                .verifyComplete();
+    }
+
+    @Test
+    @DisplayName("DB에 없는 유저의 팔로잉을 요청했을 때")
+    public void following_400_Bad_Request() {
+        //DB에 없는 유저를 팔로잉함
+        webTestClient.post()
+                .uri(followUrl + "/" + createEmail(32))
+                .header(HttpHeaders.AUTHORIZATION, jwt)
+                .exchange()
+                .expectStatus()
+                .isBadRequest();
+
+        Flux<Follow> allByFollowerEmail = followRepository.findAllByFollowerEmail(createEmail(0));
+        StepVerifier.create(allByFollowerEmail)
                 .verifyComplete();
     }
 
