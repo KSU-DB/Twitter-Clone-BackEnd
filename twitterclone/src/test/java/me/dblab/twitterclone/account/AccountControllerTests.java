@@ -1,5 +1,6 @@
 package me.dblab.twitterclone.account;
 
+import lombok.extern.slf4j.Slf4j;
 import me.dblab.twitterclone.common.BaseControllerTest;
 import me.dblab.twitterclone.config.jwt.TokenProvider;
 import org.junit.jupiter.api.BeforeEach;
@@ -8,17 +9,22 @@ import org.junit.jupiter.api.Test;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
+import java.util.UUID;
 
 import static org.assertj.core.api.BDDAssertions.then;
 
-
+@Slf4j
 public class AccountControllerTests extends BaseControllerTest {
 
     @Autowired
     AccountRepository accountRepository;
+
+    @Autowired
+    AccountService accountService;
 
     @Autowired
     TokenProvider tokenProvider;
@@ -30,27 +36,53 @@ public class AccountControllerTests extends BaseControllerTest {
     ModelMapper modelMapper;
 
     private final String accountUrl = "/api/users";
-
     private final String BEARER = "Bearer ";
+    private String jwt;
+
+    Mono<Account> byEmail;
+    AccountDto accountDto;
 
     @BeforeEach
+    @DisplayName("유저 생성")
     public void setUp() {
         accountRepository.deleteAll().subscribe();
+        accountDto = createAccountDto();
+
+        webTestClient.post()
+                .uri(accountUrl)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(Mono.just(accountDto), Account.class)
+                .exchange()
+                .expectStatus()
+                .isCreated();
+
+        byEmail = accountRepository.findByEmail(appProperties.getTestEmail());
+
+        StepVerifier.create(byEmail)
+                .assertNext(acc -> {
+                    then(acc.getUsername()).isEqualTo(appProperties.getTestUsername());
+                    then(acc.getNickname()).isEqualTo(appProperties.getTestNickname());
+                }).verifyComplete();
+
+        jwt = BEARER + tokenProvider.generateToken(byEmail.block());
+    }
+
+    @Test
+    @DisplayName("유저 불러오기 테스트")
+    public void get_user_test() {
+        Account account = byEmail.block();
+
+        webTestClient.get()
+                .uri(accountUrl + "/" + account.getId())
+                .header(HttpHeaders.AUTHORIZATION, jwt)
+                .exchange()
+                .expectStatus()
+                .isOk();
     }
 
     @Test
     @DisplayName("유저 저장 테스트")
     public void save_user_test() {
-        AccountDto accountDto = createAccountDto();
-
-        webTestClient.post()
-                .uri(accountUrl)
-                .body(Mono.just(accountDto), AccountDto.class)
-                .exchange()
-                .expectStatus()
-                .isCreated();
-
-        Mono<Account> byEmail = accountRepository.findByEmail(accountDto.getEmail());
 
         StepVerifier.create(byEmail)
                 .assertNext(account -> {
@@ -60,21 +92,13 @@ public class AccountControllerTests extends BaseControllerTest {
                     then(account.getEmail()).isEqualTo(appProperties.getTestEmail());
                 })
                 .verifyComplete();
+
     }
 
     @Test
     @DisplayName("유저 중복 테스트")
-    public void user_duplication_test()   {
-        AccountDto accountDto = createAccountDto();
+    public void duplicated_user_test()   {
 
-        webTestClient.post()
-                .uri(accountUrl)
-                .body(Mono.just(accountDto), AccountDto.class)
-                .exchange()
-                .expectStatus()
-                .isCreated();
-
-        // 동일한 유저 등록시 BadRequest
         webTestClient.post()
                 .uri(accountUrl)
                 .body(Mono.just(accountDto), AccountDto.class)
@@ -86,20 +110,8 @@ public class AccountControllerTests extends BaseControllerTest {
     @Test
     @DisplayName("유저 불러오기 테스트")
     public void load_user_test() {
-        AccountDto accountDto = createAccountDto();
-
-        webTestClient.post()
-                .uri(accountUrl)
-                .body(Mono.just(accountDto), AccountDto.class)
-                .exchange()
-                .expectStatus()
-                .isCreated();
-
-        Mono<Account> byEmail = accountRepository.findByEmail(accountDto.getEmail());
         Account account = byEmail.block();
 
-
-        String jwt = BEARER + tokenProvider.generateToken(account);
         webTestClient.get()
                 .uri(accountUrl + "/" + account.getId())
                 .header(HttpHeaders.AUTHORIZATION, jwt)
@@ -111,19 +123,7 @@ public class AccountControllerTests extends BaseControllerTest {
     @Test
     @DisplayName("유저 수정 테스트")
     public void update_user_test() {
-        AccountDto accountDto = createAccountDto();
-
-        webTestClient.post()
-                .uri(accountUrl)
-                .body(Mono.just(accountDto), AccountDto.class)
-                .exchange()
-                .expectStatus()
-                .isCreated();
-
-        Mono<Account> byEmail = accountRepository.findByEmail(accountDto.getEmail());
         Account account = byEmail.block();
-
-        String jwt = BEARER + tokenProvider.generateToken(account);
         AccountDto updatedAccount = updateAccountDto();
 
         webTestClient.put()
@@ -146,21 +146,24 @@ public class AccountControllerTests extends BaseControllerTest {
     }
 
     @Test
-    @DisplayName("유저 삭제 테스트")
-    public void delete_user_test() {
-        AccountDto accountDto = createAccountDto();
+    @DisplayName("잘못된 유저 수정 테스트")
+    public void update_none_user_test() {
+        AccountDto updatedAccount = updateAccountDto();
 
-        webTestClient.post()
-                .uri(accountUrl)
-                .body(Mono.just(accountDto), AccountDto.class)
+        webTestClient.put()
+                .uri(accountUrl + "/" + UUID.randomUUID().toString())
+                .header(HttpHeaders.AUTHORIZATION, jwt)
+                .body(Mono.just(updatedAccount), Account.class)
                 .exchange()
                 .expectStatus()
-                .isCreated();
+                .isBadRequest();
 
-        Mono<Account> byEmail = accountRepository.findByEmail(accountDto.getEmail());
+    }
+
+    @Test
+    @DisplayName("유저 삭제 테스트")
+    public void delete_user_test()  {
         Account account = byEmail.block();
-
-        String jwt = BEARER + tokenProvider.generateToken(account);
 
         webTestClient.delete()
                 .uri(accountUrl + "/" + account.getId())
@@ -168,6 +171,54 @@ public class AccountControllerTests extends BaseControllerTest {
                 .exchange()
                 .expectStatus()
                 .isOk();
+    }
+
+    @Test
+    @DisplayName("존재하지않는 유저 삭제 테스트")
+    public void delete_invalid_user_test() throws Exception {
+
+        webTestClient.delete()
+                .uri(accountUrl + "/" + UUID.randomUUID().toString())
+                .header(HttpHeaders.AUTHORIZATION, jwt)
+                .exchange()
+                .expectStatus()
+                .isBadRequest();
+    }
+
+    @Test
+    @DisplayName("다른 유저를 삭제할 경우")
+    public void delete_another_user_test()  {
+        AccountDto anotherAccountDto = createAnotherAccountDto();
+
+        webTestClient.post()
+                .uri(accountUrl)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(Mono.just(anotherAccountDto), Account.class)
+                .exchange()
+                .expectStatus()
+                .isCreated();
+
+        Mono<Account> anotherByEmail = accountRepository.findByEmail(anotherAccountDto.getEmail());
+
+        StepVerifier.create(anotherByEmail)
+                .assertNext(acc -> {
+                    then(acc.getUsername()).isEqualTo(anotherAccountDto.getUsername());
+                    then(acc.getNickname()).isEqualTo(anotherAccountDto.getNickname());
+                }).verifyComplete();
+
+        String anotherJwt = BEARER + tokenProvider.generateToken(anotherByEmail.block());
+
+        // ----------------------------------- Another User 생성 -------------------------------------
+
+        Account account = byEmail.block();
+
+        webTestClient.delete()
+                .uri(accountUrl + "/" + account.getId())
+                .header(HttpHeaders.AUTHORIZATION, anotherJwt)
+                .exchange()
+                .expectStatus()
+                .isBadRequest();
+
     }
 
     private AccountDto updateAccountDto() {
