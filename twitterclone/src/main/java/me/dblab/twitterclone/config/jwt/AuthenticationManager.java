@@ -15,7 +15,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static me.dblab.twitterclone.common.Constants.AUTHORITIES_KEY;
-
+/**
+ * Reference
+ * https://github.com/ard333/spring-boot-webflux-jjwt
+ * https://www.devglan.com/spring-security/spring-security-webflux-jwt
+ */
 @Component
 @RequiredArgsConstructor
 @Slf4j
