@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -168,6 +169,119 @@ public class AccountControllerTests extends BaseControllerTest {
                 .exchange()
                 .expectStatus()
                 .isOk();
+    }
+
+    @Test
+    @DisplayName("로그인 정상 작동 테스트")
+    public void login_test() {
+        //유저 생성
+        AccountDto accountDto = createAccountDto();
+
+        //유저 등록
+        webTestClient.post()
+                .uri(accountUrl)
+                .body(Mono.just(accountDto), AccountDto.class)
+                .exchange()
+                .expectStatus()
+                .isCreated();
+
+        //검증
+        Mono<Account> byEmail = accountRepository.findByEmail(accountDto.getEmail());
+        StepVerifier.create(byEmail)
+                .assertNext(account -> {
+                    then(account.getUsername()).isEqualTo(appProperties.getTestUsername());
+                    then(account.getNickname()).isEqualTo(appProperties.getTestNickname());
+                    then(passwordEncoder.matches(appProperties.getTestPassword(), passwordEncoder.encode(account.getPassword())));
+                    then(account.getEmail()).isEqualTo(appProperties.getTestEmail());
+                })
+                .verifyComplete();
+
+        Account account = modelMapper.map(accountDto, Account.class);
+
+        //로그인
+        webTestClient.post()
+                .uri(accountUrl + "/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(Mono.just(account), Account.class)
+                .exchange()
+                .expectStatus()
+                .isOk()
+                .expectBody()
+                .jsonPath("token").exists();
+    }
+
+    @Test
+    @DisplayName("저장되지 않은 이메일로 로그인 요청할 때")
+    public void login_test_not_saved_email_400() {
+        //유저 생성
+        AccountDto accountDto = createAccountDto();
+
+        //유저 등록
+        webTestClient.post()
+                .uri(accountUrl)
+                .body(Mono.just(accountDto), AccountDto.class)
+                .exchange()
+                .expectStatus()
+                .isCreated();
+
+        //검증
+        Mono<Account> byEmail = accountRepository.findByEmail(accountDto.getEmail());
+        StepVerifier.create(byEmail)
+                .assertNext(account -> {
+                    then(account.getUsername()).isEqualTo(appProperties.getTestUsername());
+                    then(account.getNickname()).isEqualTo(appProperties.getTestNickname());
+                    then(passwordEncoder.matches(appProperties.getTestPassword(), passwordEncoder.encode(account.getPassword())));
+                    then(account.getEmail()).isEqualTo(appProperties.getTestEmail());
+                })
+                .verifyComplete();
+
+        Account account = modelMapper.map(accountDto, Account.class);
+        account.setEmail("coffeetank@gmail.com");
+        //로그인
+        webTestClient.post()
+                .uri(accountUrl + "/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(Mono.just(account), Account.class)
+                .exchange()
+                .expectStatus()
+                .isBadRequest();
+    }
+
+    @Test
+    @DisplayName("로그인 시 비밀번호가 일치하지 않을 때")
+    public void login_test_not_matches_password_400() {
+        //유저 생성
+        AccountDto accountDto = createAccountDto();
+
+        //유저 등록
+        webTestClient.post()
+                .uri(accountUrl)
+                .body(Mono.just(accountDto), AccountDto.class)
+                .exchange()
+                .expectStatus()
+                .isCreated();
+
+        //검증
+        Mono<Account> byEmail = accountRepository.findByEmail(accountDto.getEmail());
+        StepVerifier.create(byEmail)
+                .assertNext(account -> {
+                    then(account.getUsername()).isEqualTo(appProperties.getTestUsername());
+                    then(account.getNickname()).isEqualTo(appProperties.getTestNickname());
+                    then(passwordEncoder.matches(appProperties.getTestPassword(), passwordEncoder.encode(account.getPassword())));
+                    then(account.getEmail()).isEqualTo(appProperties.getTestEmail());
+                })
+                .verifyComplete();
+
+        Account account = modelMapper.map(accountDto, Account.class);
+        account.setPassword("americano");
+        //로그인
+        webTestClient.post()
+                .uri(accountUrl + "/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(Mono.just(account), Account.class)
+                .exchange()
+                .expectStatus()
+                .isBadRequest();
     }
 
     private AccountDto updateAccountDto() {

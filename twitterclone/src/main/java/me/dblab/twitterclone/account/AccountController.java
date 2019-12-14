@@ -2,6 +2,7 @@ package me.dblab.twitterclone.account;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import me.dblab.twitterclone.config.jwt.Jwt;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BeanPropertyBindingResult;
@@ -40,7 +41,7 @@ public class AccountController {
     }
 
     @PostMapping("/login")
-    public Mono<ResponseEntity> login(@RequestBody Account account) {
+    public Mono<ResponseEntity<Jwt>> login(@RequestBody Account account) {
         return accountService.login(account);
     }
 
@@ -53,8 +54,7 @@ public class AccountController {
 
     // Delete User
     @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.OK)
-    public Mono<Void> deleteAccount(@PathVariable String id)  {
+    public Mono<ResponseEntity<Void>> deleteAccount(@PathVariable String id)  {
         return accountService.deleteAccount(id);
     }
 }

@@ -2,7 +2,9 @@ package me.dblab.twitterclone.account;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import me.dblab.twitterclone.config.jwt.Jwt;
 import me.dblab.twitterclone.config.jwt.TokenProvider;
+import me.dblab.twitterclone.tweet.Tweet;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +21,7 @@ import reactor.core.publisher.Mono;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -60,24 +63,35 @@ public class AccountService implements ReactiveUserDetailsService {
                 );    
     }
 
-    public Mono<ResponseEntity> login(Account account) {
-        return Mono.just(account).flatMap(account1 -> accountRepository.findByEmail(account1.getEmail())
-                .map(account2 -> {
-                    if (passwordEncoder.matches(account1.getPassword(), account2.getPassword())) {
-                        return ResponseEntity.ok().body(tokenProvider.generateToken(account2));
-                    }
-                    return ResponseEntity.badRequest().build();
-                }).switchIfEmpty(Mono.just(ResponseEntity.notFound().build())));
+    public Mono<ResponseEntity<Jwt>> login(Account account) {
+        return Mono.just(account)
+                .flatMap(account1 -> accountRepository.findByEmail(account.getEmail()))
+                .filter(account1 -> passwordEncoder.matches(account.getPassword(), account1.getPassword()))
+                .map(account1 -> new ResponseEntity<>(new Jwt(tokenProvider.generateToken(account1)), HttpStatus.OK))
+                .switchIfEmpty(Mono.just(ResponseEntity.badRequest().build()));
+
+//        return Mono.just(account).flatMap(account1 -> accountRepository.findByEmail(account1.getEmail())
+//                .map(account2 -> {
+//                    if (passwordEncoder.matches(account1.getPassword(), account2.getPassword())) {
+//                        return ResponseEntity.ok().body(new Jwt(tokenProvider.generateToken(account2)));
+//                    }
+//                    return ResponseEntity.badRequest().build();
+//                }).switchIfEmpty(Mono.just(ResponseEntity.notFound().build())));
     }
 
-    public Mono<Void> deleteAccount(String id) {
-        return accountRepository.deleteById(id);
+    public Mono<ResponseEntity<Void>> deleteAccount(String id) {
+        return accountRepository.findById(id)
+                .flatMap(account -> accountRepository.delete(account).then(Mono.just(new ResponseEntity<Void>(HttpStatus.OK))))
+                .switchIfEmpty(Mono.just(ResponseEntity.badRequest().build()));
     }
 
     public Mono<Account> isExistByEmail(String email) {
         return accountRepository.findByEmail(email);
     }
 
+    public Predicate<?> userMatches(String email) {
+        return email::equals;
+    }
     @Override
     public Mono<UserDetails> findByUsername(String username) {
         return accountRepository.findByEmail(username)
