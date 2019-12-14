@@ -10,7 +10,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.security.core.userdetails.User;
@@ -108,7 +107,7 @@ public class AccountService implements ReactiveUserDetailsService {
     }
 
     public Mono<Account> findCurrentUser() {
-        return ReactiveSecurityContextHolder.getContext()
-                .flatMap(securityContext -> accountRepository.findByEmail((String) securityContext.getAuthentication().getPrincipal()));
+        String principal = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return accountRepository.findByEmail(principal).switchIfEmpty(Mono.empty());
     }
 }
