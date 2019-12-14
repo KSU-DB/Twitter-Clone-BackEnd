@@ -45,7 +45,6 @@ public class AuthenticationManager implements ReactiveAuthenticationManager {
                     .map(SimpleGrantedAuthority::new).collect(Collectors.toList());
 
             UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(username, null, authorities);
-            SecurityContextHolder.getContext().setAuthentication(auth);
 
             return Mono.just(auth);
         }
