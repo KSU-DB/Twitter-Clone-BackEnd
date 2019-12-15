@@ -12,7 +12,6 @@ import me.dblab.twitterclone.tweet.TweetDto;
 import me.dblab.twitterclone.tweet.TweetRepository;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.modelmapper.ModelMapper;
@@ -56,13 +55,16 @@ public class FavoriteControllerTests extends BaseControllerTest {
     @Autowired
     ModelMapper modelMapper;
 
+    private final String accountUrl = "/api/users";
     private final String tweetUrl = "/api/tweets";
     private final String favoriteUrl = "/api/tweet/favorites";
+    private final String BEARER = "Bearer ";
+
     private String jwt;
     private String jwt2;
     private String[] jwt3 = new String[31];
+    
     Tweet tweet;
-    String accountUrl = "/api/users";
     Mono<Tweet> byAccountId;
 
     @BeforeEach
@@ -88,7 +90,7 @@ public class FavoriteControllerTests extends BaseControllerTest {
                     then(acc.getNickname()).isEqualTo(appProperties.getTestNickname());
                 }).verifyComplete();
 
-        jwt = "Bearer " + tokenProvider.generateToken(byEmail.block());
+        jwt = BEARER + tokenProvider.generateToken(byEmail.block());
 
         //----------------------------------유저 생성 완료 -----------------------------------
 
@@ -120,7 +122,6 @@ public class FavoriteControllerTests extends BaseControllerTest {
     }
 
     @Test
-    @Disabled
     @DisplayName("1명의 유저 생성 후 좋아요 테스트")
     public void save_account_favorite() throws Exception {
 
@@ -143,12 +144,12 @@ public class FavoriteControllerTests extends BaseControllerTest {
                     then(acc.getEmail()).isEqualTo(anotherAccount.getEmail());
                 }).verifyComplete();
 
-        jwt2 = "Bearer " + tokenProvider.generateToken(byEmail2.block());
+        jwt2 = BEARER + tokenProvider.generateToken(byEmail2.block());
 
         //----------------------------------유저2 생성 완료 -----------------------------------
 
-        log.info(tokenProvider.getUsernameFromToken(jwt.replace("Bearer ", "")));
-        log.info(tokenProvider.getUsernameFromToken(jwt2.replace("Bearer ", "")));
+        log.info(tokenProvider.getUsernameFromToken(jwt.replace(BEARER, "")));
+        log.info(tokenProvider.getUsernameFromToken(jwt2.replace(BEARER, "")));
 
         webTestClient.post()
                 .uri(favoriteUrl + "/" + tweet.getId())
@@ -200,7 +201,7 @@ public class FavoriteControllerTests extends BaseControllerTest {
                         then(acc.getEmail()).isEqualTo(createEmail(i));
                     }).verifyComplete();
 
-            jwt3[i] = "Bearer " + tokenProvider.generateToken(account);
+            jwt3[i] = BEARER + tokenProvider.generateToken(account);
 
             SecurityContextHolder.getContext().setAuthentication(null);
 
@@ -279,7 +280,7 @@ public class FavoriteControllerTests extends BaseControllerTest {
     }
 
     private String currentAccount() throws Exception {
-        Mono<Account> byEmail = accountRepository.findByEmail(tokenProvider.getUsernameFromToken(jwt.replace("Bearer ", "")));
+        Mono<Account> byEmail = accountRepository.findByEmail(tokenProvider.getUsernameFromToken(jwt.replace(BEARER, "")));
         return Objects.requireNonNull(byEmail.block()).getEmail();
     }
 

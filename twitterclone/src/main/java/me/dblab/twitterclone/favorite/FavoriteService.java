@@ -33,10 +33,9 @@ public class FavoriteService {
     }
 
     public Mono<ResponseEntity> saveLike(String tweetId) {
-        Mono<Account> currentUser = accountService.findCurrentUser();
         Favorite favorite = new Favorite();
 
-        return currentUser
+        return accountService.findCurrentUser()
                 .flatMap(cu -> {
                     favorite.setAccountEmail(cu.getEmail());
                     favorite.setTweetId(tweetId);
@@ -46,12 +45,13 @@ public class FavoriteService {
                         .flatMap(addCnt -> {
                             addCnt.setCountLike(addCnt.getCountLike() + 1);
                             return tweetRepository.save(addCnt);
-                        }).subscribe())
+                        })
+                        .subscribe())
                 .map(res -> new ResponseEntity<>(res, HttpStatus.CREATED));
 
     }
 
-    public Mono<Void> deleteLike(String id) {
+    public Mono<ResponseEntity> deleteLike(String id) {
         Mono<Favorite> favoriteMono = favoriteRepository.findById(id);
 
         return favoriteMono
@@ -60,7 +60,8 @@ public class FavoriteService {
                             delCnt.setCountLike(delCnt.getCountLike() - 1);
                             return tweetRepository.save(delCnt);
                         }).subscribe()
-                ).then(favoriteRepository.deleteById(id));
+                ).then(favoriteRepository.deleteById(id))
+                .map(res -> new ResponseEntity<>(res, HttpStatus.OK));
 
     }
 

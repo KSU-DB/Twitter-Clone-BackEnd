@@ -32,8 +32,11 @@ public class AccountValidator implements Validator {
         ValidationUtils.rejectIfEmptyOrWhitespace(errors, "email", "required.email", "Email is EMPTY!");
 
 
-        if (accountDto.getUsername().length() < 8 || accountDto.getPassword().length() < 10) {
+        if (accountDto.getUsername().length() < 8) {
             errors.rejectValue("username", "Too Short");
+        }
+        if(accountDto.getPassword().length() < 10)  {
+            errors.rejectValue("password", "Too Short");
         }
         if (!Pattern.matches(appProperties.getRegexPassword(), accountDto.getPassword().trim())) {
             errors.rejectValue("password", "Not Valid Password");

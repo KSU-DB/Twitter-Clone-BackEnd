@@ -25,7 +25,7 @@ public class FavoriteController {
     }
 
     @DeleteMapping("/{id}")
-    public Mono<Void> unlikeTweet(@PathVariable String id)   {
+    public Mono<ResponseEntity> unlikeTweet(@PathVariable String id)   {
         return favoriteService.deleteLike(id);
     }
 

@@ -1,7 +1,6 @@
 package me.dblab.twitterclone.account;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import me.dblab.twitterclone.config.jwt.Jwt;
 import me.dblab.twitterclone.config.jwt.TokenProvider;
 import org.modelmapper.ModelMapper;
@@ -22,7 +21,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.stream.Collectors;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AccountService implements ReactiveUserDetailsService {
@@ -42,23 +40,9 @@ public class AccountService implements ReactiveUserDetailsService {
             user.setRoles(Collections.singletonList(Role.USER));
             return modelMapper.map(user, Account.class);
         }).flatMap(user -> accountRepository.findByEmail(user.getEmail())
-                        .map(dupUser -> ResponseEntity.badRequest().build())
-                        .switchIfEmpty(accountRepository.save(user)
-                                .map(saveUser -> new ResponseEntity<>(saveUser, HttpStatus.CREATED))));
-    }
-
-    Mono<ResponseEntity> updateAccount(String id, AccountDto accountDto) {
-        return Mono.just(accountDto)
-                .flatMap(updatedUser ->
-                        accountRepository.findById(id)
-                                .map(user -> {
-                                    user.update(modelMapper.map(updatedUser, Account.class));
-                                    return user;
-                                })
-                                .flatMap(accountRepository::save)
-                                .map(res -> new ResponseEntity<>("{}", HttpStatus.OK))
-
-                );    
+                .map(dupUser -> ResponseEntity.badRequest().build())
+                .switchIfEmpty(accountRepository.save(user)
+                        .map(saveUser -> new ResponseEntity<>(saveUser, HttpStatus.CREATED))));
     }
 
     public Mono<ResponseEntity<Jwt>> login(Account account) {
@@ -67,6 +51,19 @@ public class AccountService implements ReactiveUserDetailsService {
                 .filter(account1 -> passwordEncoder.matches(account.getPassword(), account1.getPassword()))
                 .map(account1 -> new ResponseEntity<>(new Jwt(tokenProvider.generateToken(account1)), HttpStatus.OK))
                 .switchIfEmpty(Mono.just(ResponseEntity.badRequest().build()));
+    }
+
+    Mono<ResponseEntity> updateAccount(String id, AccountDto accountDto) {
+        return Mono.just(accountDto)
+                .flatMap(updatedUser -> accountRepository.findById(id)
+                        .map(user -> {
+                            user.update(modelMapper.map(updatedUser, Account.class));
+                            return user;
+                        })
+                        .flatMap(accountRepository::save)
+                        .map(res -> new ResponseEntity<>("{}", HttpStatus.OK))
+                        .switchIfEmpty(Mono.just(ResponseEntity.badRequest().body("NOT EXIST!")))
+                );
     }
 
     public Mono<ResponseEntity<Void>> deleteAccount(String id) {
