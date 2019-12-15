@@ -24,9 +24,9 @@ public class FavoriteController {
         return favoriteService.saveLike(tweetId);
     }
 
-    @DeleteMapping("/{id}")
-    public Mono<ResponseEntity> unlikeTweet(@PathVariable String id)   {
-        return favoriteService.deleteLike(id);
+    @DeleteMapping("/{favoriteId}")
+    public Mono<ResponseEntity> unlikeTweet(@PathVariable String favoriteId)   {
+        return favoriteService.deleteLike(favoriteId);
     }
 
 

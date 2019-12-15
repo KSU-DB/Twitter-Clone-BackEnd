@@ -13,14 +13,14 @@ public class FollowController {
 
     private final FollowService followService;
 
-    @PostMapping("/{email}")
-    public Mono<ResponseEntity<Follow>> following(@PathVariable String email) {
-        return followService.following(email);
+    @PostMapping("/{followingEmail}")
+    public Mono<ResponseEntity<Follow>> following(@PathVariable String followingEmail) {
+        return followService.following(followingEmail);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{followId}")
     @ResponseStatus(HttpStatus.OK)
-    public Mono<Void> unfollow(@PathVariable String id) {
-        return followService.unfollow(id);
+    public Mono<Void> unfollow(@PathVariable String followId) {
+        return followService.unfollow(followId);
     }
 }

@@ -22,9 +22,9 @@ public class TweetController {
         return tweetService.getTweetList();
     }
 
-    @GetMapping(value = "/{id}")
-    public Mono<Tweet> getTweet(@PathVariable String id) {
-        return tweetService.getTweet(id);
+    @GetMapping(value = "/{tweetId}")
+    public Mono<Tweet> getTweet(@PathVariable String tweetId) {
+        return tweetService.getTweet(tweetId);
     }
 
     @PostMapping
@@ -35,17 +35,17 @@ public class TweetController {
         return tweetService.saveTweet(tweetDto);
     }
 
-    @PutMapping(value = "/{id}")
-    public Mono<ResponseEntity<Tweet>> updateTweet(@PathVariable String id, @RequestBody TweetDto tweetDto) {
+    @PutMapping(value = "/{tweetId}")
+    public Mono<ResponseEntity<Tweet>> updateTweet(@PathVariable String tweetId, @RequestBody TweetDto tweetDto) {
         if (this.validate(tweetDto)) {
             return Mono.just(ResponseEntity.badRequest().build());
         }
-        return tweetService.updateTweet(id, tweetDto);
+        return tweetService.updateTweet(tweetId, tweetDto);
     }
 
-    @DeleteMapping(value = "/{id}")
-    public Mono<ResponseEntity> deleteTweet(@PathVariable String id) {
-        return tweetService.deleteTweet(id);
+    @DeleteMapping(value = "/{tweetId}")
+    public Mono<ResponseEntity> deleteTweet(@PathVariable String tweetId) {
+        return tweetService.deleteTweet(tweetId);
     }
 
     private boolean validate(TweetDto tweetDto) {
