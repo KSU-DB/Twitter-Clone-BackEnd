@@ -57,7 +57,7 @@ public class TweetService {
                 .switchIfEmpty(Mono.just(ResponseEntity.badRequest().build()));
     }
 
-    public Mono<ResponseEntity>  deleteTweet(String id) {
+    public Mono<ResponseEntity> deleteTweet(String id) {
         return accountService.findCurrentUser()
                 .flatMap(account -> tweetRepository.findById(id).flatMap(tweet -> {
                         if (tweet.getAuthorEmail().equals(account.getEmail())) {

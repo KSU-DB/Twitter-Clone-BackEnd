@@ -13,7 +13,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.context.SecurityContextHolder;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -52,7 +51,8 @@ public class TweetControllerTest extends BaseControllerTest {
 
     @BeforeEach
     void setUp() {
-        tweetRepository.deleteAll().then(accountRepository.deleteAll()).subscribe();
+        tweetRepository.deleteAll().subscribe();
+        accountRepository.deleteAll().subscribe();
         AccountDto account = createAccountDto();
 
         webTestClient.post()
@@ -127,9 +127,6 @@ public class TweetControllerTest extends BaseControllerTest {
         StepVerifier.create(allByAccount)
                 .assertNext(tweet -> then(tweet.getAuthorEmail()).isEqualTo(appProperties.getTestEmail()))
                 .verifyComplete();
-
-        //Authentication을 비움
-        SecurityContextHolder.getContext().setAuthentication(null);
 
         //유저2 생성
         AccountDto account = createAccountDto(2);
@@ -306,7 +303,6 @@ public class TweetControllerTest extends BaseControllerTest {
     }
 
     private void createTweet(TweetDto tweetDto, int index) throws Exception {
-        SecurityContextHolder.clearContext();
         Mono<Account> byEmail = accountRepository.findByEmail(createEmail(index));
         jwt = "Bearer " + tokenProvider.generateToken(byEmail.block());
 

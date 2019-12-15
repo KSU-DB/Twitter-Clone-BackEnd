@@ -83,7 +83,6 @@ public class AccountControllerTests extends BaseControllerTest {
     @Test
     @DisplayName("유저 저장 테스트")
     public void save_user_test() {
-
         StepVerifier.create(byEmail)
                 .assertNext(account -> {
                     then(account.getUsername()).isEqualTo(appProperties.getTestUsername());
@@ -92,7 +91,6 @@ public class AccountControllerTests extends BaseControllerTest {
                     then(account.getEmail()).isEqualTo(appProperties.getTestEmail());
                 })
                 .verifyComplete();
-
     }
 
     @Test
@@ -176,7 +174,6 @@ public class AccountControllerTests extends BaseControllerTest {
     @Test
     @DisplayName("존재하지않는 유저 삭제 테스트")
     public void delete_invalid_user_test() throws Exception {
-
         webTestClient.delete()
                 .uri(accountUrl + "/" + UUID.randomUUID().toString())
                 .header(HttpHeaders.AUTHORIZATION, jwt)
@@ -219,6 +216,53 @@ public class AccountControllerTests extends BaseControllerTest {
                 .expectStatus()
                 .isBadRequest();
 
+    }
+
+    @Test
+    @DisplayName("로그인 정상 작동 테스트")
+    public void login_test() {
+        Account account = modelMapper.map(accountDto, Account.class);
+
+        //로그인
+        webTestClient.post()
+                .uri(accountUrl + "/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(Mono.just(account), Account.class)
+                .exchange()
+                .expectStatus()
+                .isOk()
+                .expectBody()
+                .jsonPath("token").exists();
+    }
+
+    @Test
+    @DisplayName("저장되지 않은 이메일로 로그인 요청할 때")
+    public void login_test_not_saved_email_400() {
+        Account account = modelMapper.map(accountDto, Account.class);
+        account.setEmail("coffeetank@gmail.com");
+        //로그인
+        webTestClient.post()
+                .uri(accountUrl + "/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(Mono.just(account), Account.class)
+                .exchange()
+                .expectStatus()
+                .isBadRequest();
+    }
+
+    @Test
+    @DisplayName("로그인 시 비밀번호가 일치하지 않을 때")
+    public void login_test_not_matches_password_400() {
+        Account account = modelMapper.map(accountDto, Account.class);
+        account.setPassword("americano");
+        //로그인
+        webTestClient.post()
+                .uri(accountUrl + "/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(Mono.just(account), Account.class)
+                .exchange()
+                .expectStatus()
+                .isBadRequest();
     }
 
     private AccountDto updateAccountDto() {

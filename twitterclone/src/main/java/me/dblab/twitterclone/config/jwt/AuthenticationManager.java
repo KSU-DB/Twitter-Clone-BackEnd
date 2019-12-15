@@ -28,7 +28,7 @@ public class AuthenticationManager implements ReactiveAuthenticationManager {
     private final TokenProvider tokenProvider;
 
     @Override
-    @SuppressWarnings("unchecked") // 알아볼 것
+    @SuppressWarnings("unchecked")
     public Mono<Authentication> authenticate(Authentication authentication) {
         String authToken = authentication.getCredentials().toString();
         String username;
@@ -45,7 +45,6 @@ public class AuthenticationManager implements ReactiveAuthenticationManager {
                     .map(SimpleGrantedAuthority::new).collect(Collectors.toList());
 
             UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(username, null, authorities);
-            SecurityContextHolder.getContext().setAuthentication(auth);
 
             return Mono.just(auth);
         }

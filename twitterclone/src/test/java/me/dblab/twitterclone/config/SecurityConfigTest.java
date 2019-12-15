@@ -1,7 +1,9 @@
 package me.dblab.twitterclone.config;
 
 import me.dblab.twitterclone.account.AccountDto;
+import me.dblab.twitterclone.account.AccountRepository;
 import me.dblab.twitterclone.common.BaseControllerTest;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,8 +20,16 @@ public class SecurityConfigTest extends BaseControllerTest {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private AccountRepository accountRepository;
+
     private final String baseUrl = "http://localhost:8080";
     private final String userUrl = "/api/users";
+
+    @BeforeEach
+    public void setUp() {
+        accountRepository.deleteAll().subscribe();
+    }
 
     @Test
     @DisplayName("PasswordEncoder 검증")

@@ -1,13 +1,14 @@
 package me.dblab.twitterclone.account;
 
 import lombok.RequiredArgsConstructor;
+import me.dblab.twitterclone.config.jwt.Jwt;
 import me.dblab.twitterclone.config.jwt.TokenProvider;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -16,6 +17,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.stream.Collectors;
@@ -35,8 +37,7 @@ public class AccountService implements ReactiveUserDetailsService {
 
     public Mono<ResponseEntity> saveAccount(AccountDto accountDto) {
         return Mono.just(accountDto).map(user -> {
-            user.setPassword(passwordEncoder.encode(user.getPassword()));
-            user.setRoles(Collections.singletonList(Role.USER));
+            setAccount(user);
             return modelMapper.map(user, Account.class);
         }).flatMap(user -> accountRepository.findByEmail(user.getEmail())
                 .map(dupUser -> ResponseEntity.badRequest().build())
@@ -44,15 +45,12 @@ public class AccountService implements ReactiveUserDetailsService {
                         .map(saveUser -> new ResponseEntity<>(saveUser, HttpStatus.CREATED))));
     }
 
-    public Mono<ResponseEntity> login(Account account) {
+    public Mono<ResponseEntity<Jwt>> login(Account account) {
         return Mono.just(account)
-                .flatMap(account1 -> accountRepository.findByEmail(account1.getEmail())
-                        .map(account2 -> {
-                            if (passwordEncoder.matches(account1.getPassword(), account2.getPassword())) {
-                                return ResponseEntity.ok().body(tokenProvider.generateToken(account2));
-                            }
-                            return ResponseEntity.badRequest().build();
-                        }).switchIfEmpty(Mono.just(ResponseEntity.badRequest().build())));
+                .flatMap(account1 -> accountRepository.findByEmail(account.getEmail()))
+                .filter(account1 -> passwordEncoder.matches(account.getPassword(), account1.getPassword()))
+                .map(account1 -> new ResponseEntity<>(new Jwt(tokenProvider.generateToken(account1)), HttpStatus.OK))
+                .switchIfEmpty(Mono.just(ResponseEntity.badRequest().build()));
     }
 
     Mono<ResponseEntity> updateAccount(String id, AccountDto accountDto) {
@@ -68,13 +66,11 @@ public class AccountService implements ReactiveUserDetailsService {
                 );
     }
 
-    public Mono<ResponseEntity> deleteAccount(String id) {
-        return findCurrentUser().flatMap(account -> {
-            if (account.getId().equals(id)) {
-                return accountRepository.deleteById(id).map(del -> ResponseEntity.ok().build());
-            }
-            return Mono.just(ResponseEntity.badRequest().build());
-        });
+    public Mono<ResponseEntity<Void>> deleteAccount(String id) {
+        return findCurrentUser()
+                .filter(account -> account.getId().equals(id))
+                .flatMap(account -> accountRepository.delete(account).then(Mono.just(new ResponseEntity<Void>(HttpStatus.OK))))
+                .switchIfEmpty(Mono.just(new ResponseEntity<>(HttpStatus.BAD_REQUEST)));
     }
 
     public Mono<Account> isExistByEmail(String email) {
@@ -96,7 +92,14 @@ public class AccountService implements ReactiveUserDetailsService {
     }
 
     public Mono<Account> findCurrentUser() {
-        String principal = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        return accountRepository.findByEmail(principal).switchIfEmpty(Mono.empty());
+        return ReactiveSecurityContextHolder.getContext()
+                .flatMap(securityContext -> accountRepository.findByEmail((String) securityContext.getAuthentication().getPrincipal()))
+                .switchIfEmpty(Mono.empty());
+    }
+    
+    private void setAccount(AccountDto user) {
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setCreatedDate(LocalDateTime.now());
+        user.setRoles(Collections.singletonList(Role.USER));
     }
 }
