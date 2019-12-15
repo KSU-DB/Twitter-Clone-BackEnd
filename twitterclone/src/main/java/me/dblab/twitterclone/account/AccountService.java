@@ -37,9 +37,7 @@ public class AccountService implements ReactiveUserDetailsService {
 
     public Mono<ResponseEntity> saveAccount(AccountDto accountDto) {
         return Mono.just(accountDto).map(user -> {
-            user.setPassword(passwordEncoder.encode(user.getPassword()));
-            user.setCreatedDate(LocalDateTime.now());
-            user.setRoles(Collections.singletonList(Role.USER));
+            setAccount(user);
             return modelMapper.map(user, Account.class);
         }).flatMap(user -> accountRepository.findByEmail(user.getEmail())
                 .map(dupUser -> ResponseEntity.badRequest().build())
@@ -73,9 +71,6 @@ public class AccountService implements ReactiveUserDetailsService {
                 .filter(account -> account.getId().equals(id))
                 .flatMap(account -> accountRepository.delete(account).then(Mono.just(new ResponseEntity<Void>(HttpStatus.OK))))
                 .switchIfEmpty(Mono.just(new ResponseEntity<>(HttpStatus.BAD_REQUEST)));
-//        return accountRepository.findById(id)
-//                .flatMap(account -> accountRepository.delete(account).then(Mono.just(new ResponseEntity<Void>(HttpStatus.OK))))
-//                .switchIfEmpty(Mono.just(ResponseEntity.badRequest().build()));
     }
 
     public Mono<Account> isExistByEmail(String email) {
@@ -100,5 +95,11 @@ public class AccountService implements ReactiveUserDetailsService {
         return ReactiveSecurityContextHolder.getContext()
                 .flatMap(securityContext -> accountRepository.findByEmail((String) securityContext.getAuthentication().getPrincipal()))
                 .switchIfEmpty(Mono.empty());
+    }
+    
+    private void setAccount(AccountDto user) {
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setCreatedDate(LocalDateTime.now());
+        user.setRoles(Collections.singletonList(Role.USER));
     }
 }
