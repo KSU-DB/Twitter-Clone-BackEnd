@@ -14,7 +14,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
-
 import static org.assertj.core.api.BDDAssertions.then;
 
 public class TweetValidatorTest extends BaseControllerTest {

@@ -16,7 +16,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
-
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
@@ -61,8 +60,8 @@ public class AccountService implements ReactiveUserDetailsService {
                             return user;
                         })
                         .flatMap(accountRepository::save)
-                        .map(res -> new ResponseEntity<>("{}", HttpStatus.OK))
-                        .switchIfEmpty(Mono.just(ResponseEntity.badRequest().body("NOT EXIST!")))
+                        .map(res -> new ResponseEntity<>(res, HttpStatus.OK))
+                        .switchIfEmpty(Mono.just(ResponseEntity.badRequest().build()))
                 );
     }
 

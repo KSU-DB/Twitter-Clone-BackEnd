@@ -21,10 +21,8 @@ import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
-
 import java.util.Objects;
 import java.util.stream.IntStream;
-
 import static org.assertj.core.api.BDDAssertions.then;
 
 @Slf4j

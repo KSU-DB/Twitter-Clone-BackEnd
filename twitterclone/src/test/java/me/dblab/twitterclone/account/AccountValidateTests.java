@@ -40,14 +40,13 @@ public class AccountValidateTests extends BaseControllerTest {
     @Test
     @DisplayName("유저 null 검증 테스트")
     public void null_test()  {
-        AccountDto nullAccountDto = AccountDto.builder().build();
 
         webTestClient.post()
                 .uri(accountUrl)
-                .body(Mono.just(nullAccountDto), AccountDto.class)
+                .body(Mono.empty(), AccountDto.class)
                 .exchange()
                 .expectStatus()
-                .is5xxServerError();
+                .isBadRequest();
     }
 
     @Test
