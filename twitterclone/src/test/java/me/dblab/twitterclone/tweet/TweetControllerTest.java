@@ -51,7 +51,8 @@ public class TweetControllerTest extends BaseControllerTest {
 
     @BeforeEach
     void setUp() {
-        tweetRepository.deleteAll().then(accountRepository.deleteAll()).subscribe();
+        tweetRepository.deleteAll().subscribe();
+        accountRepository.deleteAll().subscribe();
         AccountDto account = createAccountDto();
 
         webTestClient.post()

@@ -17,6 +17,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.stream.Collectors;
@@ -37,6 +38,7 @@ public class AccountService implements ReactiveUserDetailsService {
     public Mono<ResponseEntity> saveAccount(AccountDto accountDto) {
         return Mono.just(accountDto).map(user -> {
             user.setPassword(passwordEncoder.encode(user.getPassword()));
+            user.setCreatedDate(LocalDateTime.now());
             user.setRoles(Collections.singletonList(Role.USER));
             return modelMapper.map(user, Account.class);
         }).flatMap(user -> accountRepository.findByEmail(user.getEmail())
@@ -67,9 +69,13 @@ public class AccountService implements ReactiveUserDetailsService {
     }
 
     public Mono<ResponseEntity<Void>> deleteAccount(String id) {
-        return accountRepository.findById(id)
+        return findCurrentUser()
+                .filter(account -> account.getId().equals(id))
                 .flatMap(account -> accountRepository.delete(account).then(Mono.just(new ResponseEntity<Void>(HttpStatus.OK))))
-                .switchIfEmpty(Mono.just(ResponseEntity.badRequest().build()));
+                .switchIfEmpty(Mono.just(new ResponseEntity<>(HttpStatus.BAD_REQUEST)));
+//        return accountRepository.findById(id)
+//                .flatMap(account -> accountRepository.delete(account).then(Mono.just(new ResponseEntity<Void>(HttpStatus.OK))))
+//                .switchIfEmpty(Mono.just(ResponseEntity.badRequest().build()));
     }
 
     public Mono<Account> isExistByEmail(String email) {

@@ -18,7 +18,6 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -113,69 +112,9 @@ public class FavoriteControllerTests extends BaseControllerTest {
                     then(tweetObj.getAuthorEmail()).isEqualTo(appProperties.getTestEmail());
                 })
                 .verifyComplete();
-
-
         //----------------------------------트윗 생성 완료 -----------------------------------
-
-        SecurityContextHolder.getContext().setAuthentication(null);
-
     }
-
-    @Test
-    @DisplayName("1명의 유저 생성 후 좋아요 테스트")
-    public void save_account_favorite() throws Exception {
-
-        AccountDto anotherAccount = createAnotherAccountDto();
-
-        webTestClient.post()
-                .uri(accountUrl)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(Mono.just(anotherAccount), Account.class)
-                .exchange()
-                .expectStatus()
-                .isCreated();
-
-        Mono<Account> byEmail2 = accountRepository.findByEmail(anotherAccount.getEmail());
-
-        StepVerifier.create(byEmail2)
-                .assertNext(acc -> {
-                    then(acc.getUsername()).isEqualTo(anotherAccount.getUsername());
-                    then(acc.getNickname()).isEqualTo(anotherAccount.getNickname());
-                    then(acc.getEmail()).isEqualTo(anotherAccount.getEmail());
-                }).verifyComplete();
-
-        jwt2 = BEARER + tokenProvider.generateToken(byEmail2.block());
-
-        //----------------------------------유저2 생성 완료 -----------------------------------
-
-        log.info(tokenProvider.getUsernameFromToken(jwt.replace(BEARER, "")));
-        log.info(tokenProvider.getUsernameFromToken(jwt2.replace(BEARER, "")));
-
-        webTestClient.post()
-                .uri(favoriteUrl + "/" + tweet.getId())
-                .header(HttpHeaders.AUTHORIZATION, jwt2)
-                .exchange()     // request 요청 & response 반환
-                .expectStatus()
-                .isCreated()
-                .expectBody()
-                .jsonPath("accountEmail").value(Matchers.equalTo(anotherAccount.getEmail()))
-                .jsonPath("tweetId").value(Matchers.equalTo(tweet.getId()));
-
-        Mono<Favorite> byId = favoriteRepository.findByTweetId(tweet.getId());
-        Favorite favorited = byId.block();
-
-        log.info("좋아요가 눌러진 트윗 Id : " + favorited.getTweetId());
-        log.info("좋아요 누른 유저의 이메일 : " + favorited.getAccountEmail());
-
-        StepVerifier.create(byId)
-                .assertNext(favorite -> {
-                    then(favorite.getAccountEmail()).isEqualTo(anotherAccount.getEmail());
-                    then(favorite.getTweetId()).isEqualTo(tweet.getId());
-                })
-                .verifyComplete();
-
-    }
-
+    
     @Test
     @DisplayName("30명의 user 저장 & 좋아요(30개) & 좋아요 카운트 & 30명이 누른 좋아요 취소")
     public void save_accounts_favorites_AND_delete_favorites()   {
@@ -202,8 +141,6 @@ public class FavoriteControllerTests extends BaseControllerTest {
                     }).verifyComplete();
 
             jwt3[i] = BEARER + tokenProvider.generateToken(account);
-
-            SecurityContextHolder.getContext().setAuthentication(null);
 
             // -------------------------------유저 생성 -----------------------------------
 
@@ -253,7 +190,6 @@ public class FavoriteControllerTests extends BaseControllerTest {
         // ------------------------------- 좋아요 불러오기 -----------------------------------
 
         IntStream.rangeClosed(1, 30).forEach(i -> {
-            SecurityContextHolder.getContext().setAuthentication(null);
             Mono<Favorite> favoriteMono = favoriteRepository.findByAccountEmail(createEmail(i));
             Favorite favorite = favoriteMono.block();
 
