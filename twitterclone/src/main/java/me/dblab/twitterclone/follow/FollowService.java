@@ -18,10 +18,6 @@ public class FollowService {
     private final FollowRepository followRepository;
     private final AccountService accountService;
 
-    public Flux<Follow> findFollowingEmails(String followerEmail) {
-        return followRepository.findAllByFollowerEmail(followerEmail);
-    }
-
     public Mono<ResponseEntity<Follow>> following(String email) {
         Mono<Account> currentUser = accountService.findCurrentUser();
         Follow follow = new Follow();
@@ -42,5 +38,9 @@ public class FollowService {
         return followRepository.findById(id)
                 .flatMap(deleteFollow -> followRepository.deleteById(id))
                 .map(res -> new ResponseEntity<>(res, HttpStatus.OK));
+    }
+
+    public Flux<Follow> findFollowingEmails(String followerEmail) {
+        return followRepository.findAllByFollowerEmail(followerEmail);
     }
 }
