@@ -16,9 +16,9 @@ public class AccountController {
     private final AccountService accountService;
     private final AccountValidator accountValidator;
 
-    @GetMapping("/{id}")
-    public Mono<Account> getAccount(@PathVariable String id) {
-        return accountService.getAccount(id);
+    @GetMapping("/{accountId}")
+    public Mono<Account> getAccount(@PathVariable String accountId) {
+        return accountService.getAccount(accountId);
     }
 
     @PostMapping
@@ -34,17 +34,17 @@ public class AccountController {
         return accountService.login(account);
     }
 
-    @PutMapping("/{id}")
-    public Mono<ResponseEntity> updateAccount(@PathVariable String id, @RequestBody AccountDto accountDto) {
+    @PutMapping("/{accountId}")
+    public Mono<ResponseEntity> updateAccount(@PathVariable String accountId, @RequestBody AccountDto accountDto) {
         return Mono.just(accountDto)
                 .filter(this::validate)
-                .flatMap(accountDto1 -> accountService.updateAccount(id, accountDto1))
+                .flatMap(accountDto1 -> accountService.updateAccount(accountId, accountDto1))
                 .switchIfEmpty(Mono.just(ResponseEntity.badRequest().build()));
     }
 
-    @DeleteMapping("/{id}")
-    public Mono<ResponseEntity<Void>> deleteAccount(@PathVariable String id)  {
-        return accountService.deleteAccount(id);
+    @DeleteMapping("/{accountId}")
+    public Mono<ResponseEntity<Void>> deleteAccount(@PathVariable String accountId)  {
+        return accountService.deleteAccount(accountId);
     }
 
     private boolean validate(AccountDto accountDto) {

@@ -3,7 +3,6 @@ package me.dblab.twitterclone.account;
 import me.dblab.twitterclone.common.AppProperties;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
-import org.springframework.validation.ValidationUtils;
 import org.springframework.validation.Validator;
 import java.util.regex.Pattern;
 
@@ -23,15 +22,24 @@ public class AccountValidator implements Validator {
 
     @Override
     public void validate(Object target, Errors errors) {
-
         AccountDto accountDto = (AccountDto) target;
 
-        ValidationUtils.rejectIfEmptyOrWhitespace(errors, "username", "required.username", "Username is EMPTY!");
-        ValidationUtils.rejectIfEmptyOrWhitespace(errors, "nickname", "required.nickname", "Nickname is EMPTY!");
-        ValidationUtils.rejectIfEmptyOrWhitespace(errors, "password", "required.password", "Password is EMPTY!");
-        ValidationUtils.rejectIfEmptyOrWhitespace(errors, "email", "required.email", "Email is EMPTY!");
-
-
+        if(accountDto.getUsername() == null)   {
+            errors.rejectValue("username", "username must not be null");
+            return;
+        }
+        if(accountDto.getNickname() == null)   {
+            errors.rejectValue("nickname", "nickname must not be null");
+            return;
+        }
+        if(accountDto.getPassword() == null)   {
+            errors.rejectValue("password", "password must not be null");
+            return;
+        }
+        if(accountDto.getEmail() == null)   {
+            errors.rejectValue("email", "email must not be null");
+            return;
+        }
         if (accountDto.getUsername().length() < 8) {
             errors.rejectValue("username", "Too Short");
         }

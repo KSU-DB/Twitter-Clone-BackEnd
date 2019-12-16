@@ -14,7 +14,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import java.util.UUID;
-
 import static org.assertj.core.api.BDDAssertions.then;
 
 @Slf4j

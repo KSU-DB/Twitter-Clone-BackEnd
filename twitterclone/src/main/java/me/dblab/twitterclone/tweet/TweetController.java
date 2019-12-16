@@ -1,7 +1,6 @@
 package me.dblab.twitterclone.tweet;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.Errors;
@@ -23,9 +22,9 @@ public class TweetController {
         return tweetService.getTweetList();
     }
 
-    @GetMapping(value = "/{id}")
-    public Mono<Tweet> getTweet(@PathVariable String id) {
-        return tweetService.getTweet(id);
+    @GetMapping(value = "/{tweetId}")
+    public Mono<Tweet> getTweet(@PathVariable String tweetId) {
+        return tweetService.getTweet(tweetId);
     }
 
     @PostMapping
@@ -36,17 +35,17 @@ public class TweetController {
                 .switchIfEmpty(Mono.just(ResponseEntity.badRequest().build()));
     }
 
-    @PutMapping(value = "/{id}")
-    public Mono<ResponseEntity<Tweet>> updateTweet(@PathVariable String id, @RequestBody TweetDto tweetDto) {
+    @PutMapping(value = "/{tweetId}")
+    public Mono<ResponseEntity<Tweet>> updateTweet(@PathVariable String tweetId, @RequestBody TweetDto tweetDto) {
         return Mono.just(tweetDto)
                 .filter(this::validate)
-                .flatMap(tweetDto1 -> tweetService.updateTweet(id, tweetDto1))
+                .flatMap(tweetDto1 -> tweetService.updateTweet(tweetId, tweetDto1))
                 .switchIfEmpty(Mono.just(ResponseEntity.badRequest().build()));
     }
 
-    @DeleteMapping(value = "/{id}")
-    public Mono<ResponseEntity> deleteTweet(@PathVariable String id) {
-        return tweetService.deleteTweet(id);
+    @DeleteMapping(value = "/{tweetId}")
+    public Mono<ResponseEntity> deleteTweet(@PathVariable String tweetId){
+        return tweetService.deleteTweet(tweetId);
     }
 
     private boolean validate(TweetDto tweetDto) {

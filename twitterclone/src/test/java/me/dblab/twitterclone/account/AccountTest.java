@@ -3,7 +3,6 @@ package me.dblab.twitterclone.account;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Date;
