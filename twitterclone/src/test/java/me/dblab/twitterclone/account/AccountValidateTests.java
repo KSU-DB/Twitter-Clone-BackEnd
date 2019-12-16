@@ -126,7 +126,7 @@ public class AccountValidateTests extends BaseControllerTest {
                 .expectStatus()
                 .isBadRequest();
 
-        // 영어 숫자 없을 시 BadRequest
+        // 숫자 없을 시 BadRequest
         accountDto.setPassword("Yangkeeseok");
 
         webTestClient.post()
@@ -136,7 +136,7 @@ public class AccountValidateTests extends BaseControllerTest {
                 .expectStatus()
                 .isBadRequest();
 
-        // 영어 특수문자 없을 시 BadRequest
+        // 특수문자 없을 시 BadRequest
         accountDto.setPassword("Yangkeeseok3");
 
         webTestClient.post()

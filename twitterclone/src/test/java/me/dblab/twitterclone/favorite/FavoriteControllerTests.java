@@ -58,8 +58,7 @@ public class FavoriteControllerTests extends BaseControllerTest {
     private final String BEARER = "Bearer ";
 
     private String jwt;
-    private String jwt2;
-    private String[] jwt3 = new String[31];
+    private String[] jwtArr = new String[31];
     
     Tweet tweet;
     Mono<Tweet> byAccountId;
@@ -138,13 +137,13 @@ public class FavoriteControllerTests extends BaseControllerTest {
                         then(acc.getEmail()).isEqualTo(createEmail(i));
                     }).verifyComplete();
 
-            jwt3[i] = BEARER + tokenProvider.generateToken(account);
+            jwtArr[i] = BEARER + tokenProvider.generateToken(account);
 
             // -------------------------------유저 생성 -----------------------------------
 
             webTestClient.post()
                     .uri(favoriteUrl + "/" + tweet.getId())
-                    .header(HttpHeaders.AUTHORIZATION, jwt3[i])
+                    .header(HttpHeaders.AUTHORIZATION, jwtArr[i])
                     .exchange()     // request 요청 & response 반환
                     .expectStatus()
                     .isCreated()
@@ -193,7 +192,7 @@ public class FavoriteControllerTests extends BaseControllerTest {
 
             webTestClient.delete()
                     .uri(favoriteUrl + "/" + favorite.getId())
-                    .header(HttpHeaders.AUTHORIZATION, jwt3[i])
+                    .header(HttpHeaders.AUTHORIZATION, jwtArr[i])
                     .exchange()
                     .expectStatus()
                     .isOk();
@@ -208,9 +207,6 @@ public class FavoriteControllerTests extends BaseControllerTest {
             log.info("취소 후 좋아요 count : " + Objects.requireNonNull(deleteTweet).getCountLike());
 
         });
-
-
-
     }
 
     private String currentAccount() throws Exception {
@@ -236,5 +232,4 @@ public class FavoriteControllerTests extends BaseControllerTest {
                 .nickname(appProperties.getTestNickname())
                 .build();
     }
-
 }
