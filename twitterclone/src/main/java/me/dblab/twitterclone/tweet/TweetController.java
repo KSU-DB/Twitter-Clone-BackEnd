@@ -29,22 +29,22 @@ public class TweetController {
 
     @PostMapping
     public Mono<ResponseEntity> saveTweet(@RequestBody TweetDto tweetDto) {
-        if (this.validate(tweetDto)) {
-            return Mono.just(ResponseEntity.badRequest().build());
-        }
-        return tweetService.saveTweet(tweetDto);
+        return Mono.just(tweetDto)
+                .filter(this::validate)
+                .flatMap(tweetService::saveTweet)
+                .switchIfEmpty(Mono.just(ResponseEntity.badRequest().build()));
     }
 
     @PutMapping(value = "/{tweetId}")
     public Mono<ResponseEntity<Tweet>> updateTweet(@PathVariable String tweetId, @RequestBody TweetDto tweetDto) {
-        if (this.validate(tweetDto)) {
-            return Mono.just(ResponseEntity.badRequest().build());
-        }
-        return tweetService.updateTweet(tweetId, tweetDto);
+        return Mono.just(tweetDto)
+                .filter(this::validate)
+                .flatMap(tweetDto1 -> tweetService.updateTweet(tweetId, tweetDto1))
+                .switchIfEmpty(Mono.just(ResponseEntity.badRequest().build()));
     }
 
     @DeleteMapping(value = "/{tweetId}")
-    public Mono<ResponseEntity> deleteTweet(@PathVariable String tweetId) {
+    public Mono<ResponseEntity> deleteTweet(@PathVariable String tweetId){
         return tweetService.deleteTweet(tweetId);
     }
 
@@ -52,9 +52,9 @@ public class TweetController {
         Errors errors = new BeanPropertyBindingResult(tweetDto, "Tweet");
         this.tweetValidator.validate(tweetDto, errors);
         if (errors.hasErrors()) {
-            return true;
+            return false;
         }
-        return false;
+        return true;
     }
 
 }

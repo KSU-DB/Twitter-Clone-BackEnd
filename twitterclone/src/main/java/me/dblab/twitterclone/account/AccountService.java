@@ -35,10 +35,9 @@ public class AccountService implements ReactiveUserDetailsService {
     }
 
     public Mono<ResponseEntity> saveAccount(AccountDto accountDto) {
-        return Mono.just(accountDto).map(user -> {
-            setAccount(user);
-            return modelMapper.map(user, Account.class);
-        }).flatMap(user -> accountRepository.findByEmail(user.getEmail())
+        return Mono.just(accountDto)
+                .map(user -> modelMapper.map(setAccount(user), Account.class))
+                .flatMap(user -> accountRepository.findByEmail(user.getEmail())
                 .map(dupUser -> ResponseEntity.badRequest().build())
                 .switchIfEmpty(accountRepository.save(user)
                         .map(saveUser -> new ResponseEntity<>(saveUser, HttpStatus.CREATED))));
@@ -56,6 +55,7 @@ public class AccountService implements ReactiveUserDetailsService {
         return Mono.just(accountDto)
                 .flatMap(updatedUser -> accountRepository.findById(id)
                         .map(user -> {
+                            updatedUser.setPassword(passwordEncoder.encode(updatedUser.getPassword()));
                             user.update(modelMapper.map(updatedUser, Account.class));
                             return user;
                         })
@@ -95,10 +95,12 @@ public class AccountService implements ReactiveUserDetailsService {
                 .flatMap(securityContext -> accountRepository.findByEmail((String) securityContext.getAuthentication().getPrincipal()))
                 .switchIfEmpty(Mono.empty());
     }
-    
-    private void setAccount(AccountDto user) {
+
+    private AccountDto setAccount(AccountDto user) {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setCreatedDate(LocalDateTime.now());
         user.setRoles(Collections.singletonList(Role.USER));
+
+        return user;
     }
 }
