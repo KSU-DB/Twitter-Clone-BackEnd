@@ -30,18 +30,18 @@ public class TweetController {
 
     @PostMapping
     public Mono<ResponseEntity> saveTweet(@RequestBody TweetDto tweetDto) {
-        if (this.validate(tweetDto)) {
-            return Mono.just(ResponseEntity.badRequest().build());
-        }
-        return tweetService.saveTweet(tweetDto);
+        return Mono.just(tweetDto)
+                .filter(this::validate)
+                .flatMap(tweetService::saveTweet)
+                .switchIfEmpty(Mono.just(ResponseEntity.badRequest().build()));
     }
 
     @PutMapping(value = "/{id}")
     public Mono<ResponseEntity<Tweet>> updateTweet(@PathVariable String id, @RequestBody TweetDto tweetDto) {
-        if (this.validate(tweetDto)) {
-            return Mono.just(ResponseEntity.badRequest().build());
-        }
-        return tweetService.updateTweet(id, tweetDto);
+        return Mono.just(tweetDto)
+                .filter(this::validate)
+                .flatMap(tweetDto1 -> tweetService.updateTweet(id, tweetDto1))
+                .switchIfEmpty(Mono.just(ResponseEntity.badRequest().build()));
     }
 
     @DeleteMapping(value = "/{id}")
@@ -53,9 +53,9 @@ public class TweetController {
         Errors errors = new BeanPropertyBindingResult(tweetDto, "Tweet");
         this.tweetValidator.validate(tweetDto, errors);
         if (errors.hasErrors()) {
-            return true;
+            return false;
         }
-        return false;
+        return true;
     }
 
 }

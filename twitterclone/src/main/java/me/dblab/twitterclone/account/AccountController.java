@@ -23,10 +23,10 @@ public class AccountController {
 
     @PostMapping
     public Mono<ResponseEntity> saveAccount(@RequestBody AccountDto accountDto)  {
-        if(this.validate(accountDto))
-            return Mono.just(ResponseEntity.badRequest().build());
-        else
-            return accountService.saveAccount(accountDto);
+        return Mono.just(accountDto)
+                .filter(this::validate)
+                .flatMap(accountService::saveAccount)
+                .switchIfEmpty(Mono.just(ResponseEntity.badRequest().build()));
     }
 
     @PostMapping("/login")
@@ -36,10 +36,10 @@ public class AccountController {
 
     @PutMapping("/{id}")
     public Mono<ResponseEntity> updateAccount(@PathVariable String id, @RequestBody AccountDto accountDto) {
-        if(this.validate(accountDto))
-            return Mono.just(ResponseEntity.badRequest().build());
-        else
-            return accountService.updateAccount(id, accountDto);
+        return Mono.just(accountDto)
+                .filter(this::validate)
+                .flatMap(accountDto1 -> accountService.updateAccount(id, accountDto1))
+                .switchIfEmpty(Mono.just(ResponseEntity.badRequest().build()));
     }
 
     @DeleteMapping("/{id}")
@@ -51,9 +51,9 @@ public class AccountController {
         Errors errors = new BeanPropertyBindingResult(accountDto, "Account");
         this.accountValidator.validate(accountDto, errors);
         if (errors.hasErrors()) {
-            return true;
+            return false;
         }
-        return false;
+        return true;
     }
 }
 
