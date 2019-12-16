@@ -58,18 +58,4 @@ public class SecurityConfigTest extends BaseControllerTest {
                 .expectStatus()
                 .isCreated();
     }
-
-    @Test
-    @DisplayName("허용하지 않은 Origin에서 요청했을 때")
-    public void corsTest_forbidden() {
-        webTestClient
-                .mutate().baseUrl(baseUrl).build()
-                .post()
-                .uri(userUrl)
-                .header(HttpHeaders.ORIGIN, "http://any-origin.com")
-                .body(Mono.just(createAccountDto()), AccountDto.class)
-                .exchange()
-                .expectStatus()
-                .isForbidden();
-    }
 }
