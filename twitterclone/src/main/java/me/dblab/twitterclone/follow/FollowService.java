@@ -16,8 +16,11 @@ import reactor.core.publisher.Mono;
 public class FollowService {
 
     private final FollowRepository followRepository;
-
     private final AccountService accountService;
+
+    public Flux<Follow> findFollowingEmails(String followerEmail) {
+        return followRepository.findAllByFollowerEmail(followerEmail);
+    }
 
     public Mono<ResponseEntity<Follow>> following(String email) {
         Mono<Account> currentUser = accountService.findCurrentUser();
@@ -35,11 +38,9 @@ public class FollowService {
                 .switchIfEmpty(Mono.just(ResponseEntity.badRequest().build()));
     }
 
-    public Mono<Void> unfollow(String id) {
-        return followRepository.deleteById(id);
-    }
-
-    public Flux<Follow> findFollowingEmails(String followerEmail) {
-        return followRepository.findAllByFollowerEmail(followerEmail);
+    public Mono<ResponseEntity> unfollow(String id) {
+        return followRepository.findById(id)
+                .flatMap(deleteFollow -> followRepository.deleteById(id))
+                .map(res -> new ResponseEntity<>(res, HttpStatus.OK));
     }
 }

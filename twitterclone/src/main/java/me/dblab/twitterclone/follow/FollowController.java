@@ -1,7 +1,6 @@
 package me.dblab.twitterclone.follow;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
@@ -19,8 +18,7 @@ public class FollowController {
     }
 
     @DeleteMapping("/{followId}")
-    @ResponseStatus(HttpStatus.OK)
-    public Mono<Void> unfollow(@PathVariable String followId) {
+    public Mono<ResponseEntity> unfollow(@PathVariable String followId) {
         return followService.unfollow(followId);
     }
 }
