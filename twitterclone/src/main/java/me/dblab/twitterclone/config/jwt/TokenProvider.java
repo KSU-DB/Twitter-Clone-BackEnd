@@ -6,13 +6,11 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.extern.slf4j.Slf4j;
 import me.dblab.twitterclone.account.Account;
 import org.springframework.stereotype.Component;
-
 import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
-
 import static me.dblab.twitterclone.common.Constants.ACCESS_TOKEN_VALIDITY_SECONDS;
 import static me.dblab.twitterclone.common.Constants.SIGNING_KEY;
 /**

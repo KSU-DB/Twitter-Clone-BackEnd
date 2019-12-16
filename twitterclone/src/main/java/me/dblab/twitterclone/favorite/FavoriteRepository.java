@@ -7,6 +7,5 @@ import reactor.core.publisher.Mono;
 public interface FavoriteRepository extends ReactiveMongoRepository<Favorite, String> {
 
     Flux<Favorite> findAllByTweetId(String tweetId);
-    Mono<Favorite> findByTweetId(String tweetId);       // test용
     Mono<Favorite> findByAccountEmail(String email);    // test용
 }
