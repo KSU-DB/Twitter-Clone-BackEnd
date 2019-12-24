@@ -1,10 +1,12 @@
 package me.dblab.twitterclone.tweet;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 
 @Component
+@RequiredArgsConstructor
 public class TweetValidator implements Validator {
 
     @Override
@@ -24,5 +26,6 @@ public class TweetValidator implements Validator {
         if (tweetContentLength < 1 || tweetContentLength > 255) {
             errors.rejectValue("content", "wrongValue", "Content must be at least 1 character long or less than 255 characters long.");
         }
+
     }
 }

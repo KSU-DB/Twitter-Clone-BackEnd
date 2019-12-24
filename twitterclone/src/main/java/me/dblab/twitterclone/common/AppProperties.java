@@ -16,5 +16,6 @@ public class AppProperties {
     private String testNickname;
     private String regexEmail;
     private String regexPassword;
+    private String regexSpecialChar;
 
 }

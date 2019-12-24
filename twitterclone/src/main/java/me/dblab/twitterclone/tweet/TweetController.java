@@ -14,7 +14,6 @@ import reactor.core.publisher.Mono;
 public class TweetController {
 
     private final TweetService tweetService;
-
     private final TweetValidator tweetValidator;
 
     @GetMapping

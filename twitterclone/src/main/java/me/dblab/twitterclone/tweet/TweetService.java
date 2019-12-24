@@ -1,8 +1,10 @@
 package me.dblab.twitterclone.tweet;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import me.dblab.twitterclone.account.Account;
 import me.dblab.twitterclone.account.AccountService;
+import me.dblab.twitterclone.common.AppProperties;
 import me.dblab.twitterclone.follow.FollowService;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
@@ -11,18 +13,18 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import java.time.LocalDateTime;
+import java.util.HashSet;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class TweetService {
 
     private final TweetRepository tweetRepository;
-
     private final AccountService accountService;
-
     private final ModelMapper modelMapper;
-
     private final FollowService followService;
+    private final AppProperties appProperties;
 
     public Flux<Tweet> getTweetList() {
         Mono<Account> currentUser = accountService.findCurrentUser();
@@ -40,6 +42,7 @@ public class TweetService {
         return accountService.findCurrentUser()
                 .map(cu -> {
                     Tweet tweet = modelMapper.map(tweetDto, Tweet.class);
+                    validateHashTag(tweet);
                     tweet.setCreatedDate(LocalDateTime.now());
                     tweet.setAuthorEmail(cu.getEmail());
                     return tweet;
@@ -51,6 +54,7 @@ public class TweetService {
         return tweetRepository.findById(id)
                 .flatMap(updatedTweet -> {
                     updatedTweet.setContent(tweetDto.getContent());
+                    validateHashTag(updatedTweet);
                     return tweetRepository.save(updatedTweet);
                 }).map(updatedTweet -> ResponseEntity.ok().body(updatedTweet))
                 .switchIfEmpty(Mono.just(ResponseEntity.badRequest().build()));
@@ -66,4 +70,18 @@ public class TweetService {
                     }));
     }
 
-}
+    private void validateHashTag(Tweet tweet) {
+        HashSet<String> hashSet = new HashSet<>();
+
+        for(String hashTag : tweet.getContent().split("\\s"))    {
+            if(hashTag.startsWith("#")) {
+                hashTag = hashTag.substring(1);
+                    if(hashTag.matches(appProperties.getRegexSpecialChar())) {
+                        hashSet.add(hashTag);
+                        tweet.setHashTag(hashSet);
+                    }
+                }
+            }
+        }
+    }
+
