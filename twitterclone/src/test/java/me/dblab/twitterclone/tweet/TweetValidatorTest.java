@@ -12,8 +12,11 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
+import java.util.Objects;
+
 import static org.assertj.core.api.BDDAssertions.then;
 
 public class TweetValidatorTest extends BaseControllerTest {
@@ -102,7 +105,6 @@ public class TweetValidatorTest extends BaseControllerTest {
     @Test
     @DisplayName("컨텐츠가 null일 때")
     public void contentValidate_null() {
-        //트윗 생성
         TweetDto tweetDto = new TweetDto();
 
         webTestClient.post()
@@ -115,5 +117,37 @@ public class TweetValidatorTest extends BaseControllerTest {
                 .isBadRequest()
                 .expectBody()
                 .jsonPath("content", "Content must be at least 1 character long or less than 255 characters long.");
+    }
+
+    @Test
+    @DisplayName("해시태그가 null 일 때")
+    public void hashTag_null_test() throws Exception {
+        TweetDto tweetDto = TweetDto.builder()
+                .content("컨텐츠")
+                .build();
+
+        webTestClient.post()
+                .uri(tweetUrl)
+                .header(HttpHeaders.AUTHORIZATION, jwt)
+                .body(Mono.just(tweetDto), Tweet.class)
+                .exchange()
+                .expectStatus()
+                .isCreated();
+
+        Flux<Tweet> allByAccount = tweetRepository.findAllByAuthorEmail(currentAccount());
+
+        StepVerifier.create(allByAccount)
+                .assertNext(tweetObj -> {
+                    then(tweetObj.getContent()).isEqualTo("컨텐츠");
+                    then(tweetObj.getHashTag()).isNull();
+                    then(tweetObj.getAuthorEmail()).isEqualTo(appProperties.getTestEmail());
+                })
+                .verifyComplete();
+
+    }
+
+    private String currentAccount() throws Exception {
+        Mono<Account> byEmail = accountRepository.findByEmail(tokenProvider.getUsernameFromToken(jwt.replace("Bearer ", "")));
+        return Objects.requireNonNull(byEmail.block()).getEmail();
     }
 }
