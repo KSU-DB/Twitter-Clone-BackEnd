@@ -89,7 +89,7 @@ public class TweetControllerTest extends BaseControllerTest {
 
         StepVerifier.create(allByAccount)
                 .assertNext(tweetObj -> {
-                    then(tweetObj.getContent()).isEqualTo("경성대학교 C동 528호");
+                    then(tweetObj.getContent()).isEqualTo("경성대학교 #대학교 #4학년 #공대C동#528호 소프트웨어학과 #졸업");
                     then(tweetObj.getAuthorEmail()).isEqualTo(appProperties.getTestEmail());
                 })
                 .verifyComplete();
@@ -179,6 +179,7 @@ public class TweetControllerTest extends BaseControllerTest {
         createTweet(tweetDto);
 
         String update_content = "update content";
+
         Flux<Tweet> allByAccount = tweetRepository.findAllByAuthorEmail(currentAccount());
 
         allByAccount.doOnNext(tweet -> {
@@ -210,7 +211,7 @@ public class TweetControllerTest extends BaseControllerTest {
 
         //저장되었는지 검증
         StepVerifier.create(allByAccount)
-                .assertNext(tweet -> then(tweet.getContent()).isEqualTo("경성대학교 C동 528호"))
+                .assertNext(tweet -> then(tweet.getContent()).isEqualTo("경성대학교 #대학교 #4학년 #공대C동#528호 소프트웨어학과 #졸업"))
                 .verifyComplete();
 
         Tweet tweet2 = allByAccount.blockFirst();
@@ -228,7 +229,7 @@ public class TweetControllerTest extends BaseControllerTest {
        StepVerifier.create(tweetRepository.findById(tweet2.getId()))
                 .assertNext(tweet1 -> {
                     then(tweet1.getId()).isEqualTo(tweet2.getId());
-                    then(tweet1.getContent()).isEqualTo("경성대학교 C동 528호");
+                    then(tweet1.getContent()).isEqualTo("경성대학교 #대학교 #4학년 #공대C동#528호 소프트웨어학과 #졸업");
                 }).verifyComplete();
     }
 
@@ -338,7 +339,7 @@ public class TweetControllerTest extends BaseControllerTest {
 
     private TweetDto tweetBuilder() {
         TweetDto tweetDto = new TweetDto();
-        tweetDto.setContent("경성대학교 C동 528호");
+        tweetDto.setContent("경성대학교 #대학교 #4학년 #공대C동#528호 소프트웨어학과 #졸업");
         return tweetDto;
     }
 

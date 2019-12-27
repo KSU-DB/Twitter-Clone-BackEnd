@@ -3,6 +3,7 @@ package me.dblab.twitterclone.tweet;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.lang.Nullable;
 import java.time.LocalDateTime;
 import java.util.Set;
 
@@ -21,5 +22,7 @@ public class Tweet {
     private String authorEmail;
 
     private Integer countLike = 0;
-
+  
+    @Nullable
+    private Set<String> hashTag;
 }

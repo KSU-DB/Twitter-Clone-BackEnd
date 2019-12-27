@@ -1,8 +1,10 @@
 package me.dblab.twitterclone.tweet;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import me.dblab.twitterclone.account.Account;
 import me.dblab.twitterclone.account.AccountService;
+import me.dblab.twitterclone.common.AppProperties;
 import me.dblab.twitterclone.follow.FollowService;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
@@ -11,18 +13,23 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class TweetService {
 
     private final TweetRepository tweetRepository;
-
     private final AccountService accountService;
-
     private final ModelMapper modelMapper;
-
     private final FollowService followService;
+    private final AppProperties appProperties;
 
     public Flux<Tweet> getTweetList() {
         Mono<Account> currentUser = accountService.findCurrentUser();
@@ -40,6 +47,7 @@ public class TweetService {
         return accountService.findCurrentUser()
                 .map(cu -> {
                     Tweet tweet = modelMapper.map(tweetDto, Tweet.class);
+                    validateHashTag(tweet);
                     tweet.setCreatedDate(LocalDateTime.now());
                     tweet.setAuthorEmail(cu.getEmail());
                     return tweet;
@@ -51,6 +59,7 @@ public class TweetService {
         return tweetRepository.findById(id)
                 .flatMap(updatedTweet -> {
                     updatedTweet.setContent(tweetDto.getContent());
+                    validateHashTag(updatedTweet);
                     return tweetRepository.save(updatedTweet);
                 }).map(updatedTweet -> ResponseEntity.ok().body(updatedTweet))
                 .switchIfEmpty(Mono.just(ResponseEntity.badRequest().build()));
@@ -59,11 +68,24 @@ public class TweetService {
     public Mono<ResponseEntity> deleteTweet(String id) {
         return accountService.findCurrentUser()
                 .flatMap(account -> tweetRepository.findById(id).flatMap(tweet -> {
-                        if (tweet.getAuthorEmail().equals(account.getEmail())) {
-                            return tweetRepository.deleteById(id).map(i -> ResponseEntity.ok().build());
-                        }
-                        return Mono.just(ResponseEntity.badRequest().build());
-                    }));
+                    if (tweet.getAuthorEmail().equals(account.getEmail())) {
+                        return tweetRepository.deleteById(id).map(i -> ResponseEntity.ok().build());
+                    }
+                    return Mono.just(ResponseEntity.badRequest().build());
+                }));
     }
 
+    private void validateHashTag(Tweet tweet) {
+        Set<String> set = Arrays.stream(tweet.getContent().split("\\s"))
+                .filter(hashTag -> hashTag.startsWith("#"))
+                .map(hashTag -> hashTag.substring(1))
+                .filter(hashTag -> hashTag.matches(appProperties.getRegexSpecialChar()))
+                .collect(Collectors.toSet());
+
+        if(set.isEmpty())
+            return;
+        tweet.setHashTag(set);
+
+    }
 }
+
