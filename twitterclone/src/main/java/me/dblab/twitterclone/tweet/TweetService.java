@@ -13,7 +13,12 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Slf4j
 @Service
@@ -63,25 +68,24 @@ public class TweetService {
     public Mono<ResponseEntity> deleteTweet(String id) {
         return accountService.findCurrentUser()
                 .flatMap(account -> tweetRepository.findById(id).flatMap(tweet -> {
-                        if (tweet.getAuthorEmail().equals(account.getEmail())) {
-                            return tweetRepository.deleteById(id).map(i -> ResponseEntity.ok().build());
-                        }
-                        return Mono.just(ResponseEntity.badRequest().build());
-                    }));
+                    if (tweet.getAuthorEmail().equals(account.getEmail())) {
+                        return tweetRepository.deleteById(id).map(i -> ResponseEntity.ok().build());
+                    }
+                    return Mono.just(ResponseEntity.badRequest().build());
+                }));
     }
 
     private void validateHashTag(Tweet tweet) {
-        HashSet<String> hashSet = new HashSet<>();
+        Set<String> set = Arrays.stream(tweet.getContent().split("\\s"))
+                .filter(hashTag -> hashTag.startsWith("#"))
+                .map(hashTag -> hashTag.substring(1))
+                .filter(hashTag -> hashTag.matches(appProperties.getRegexSpecialChar()))
+                .collect(Collectors.toSet());
 
-        for(String hashTag : tweet.getContent().split("\\s"))    {
-            if(hashTag.startsWith("#")) {
-                hashTag = hashTag.substring(1);
-                    if(hashTag.matches(appProperties.getRegexSpecialChar())) {
-                        hashSet.add(hashTag);
-                        tweet.setHashTag(hashSet);
-                    }
-                }
-            }
-        }
+        if(set.isEmpty())
+            return;
+        tweet.setHashTag(set);
+
     }
+}
 
