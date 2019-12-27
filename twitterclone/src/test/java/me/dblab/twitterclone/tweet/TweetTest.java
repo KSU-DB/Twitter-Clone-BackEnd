@@ -4,14 +4,18 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
+
 import static org.assertj.core.api.BDDAssertions.then;
 
 @ExtendWith(SpringExtension.class)
-public class TweetTest {
+class TweetTest {
 
     @Test
-    public void tweetBuilder() {
+    void tweetBuilder() {
         Tweet tweet = Tweet.builder()
                 .id(UUID.randomUUID().toString())
                 .content("test content")
