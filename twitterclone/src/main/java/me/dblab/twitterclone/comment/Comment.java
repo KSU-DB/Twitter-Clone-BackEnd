@@ -1,25 +1,24 @@
-package me.dblab.twitterclone.tweet;
+package me.dblab.twitterclone.comment;
 
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+
 import java.time.LocalDateTime;
-import java.util.Set;
 
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
 @Document
-public class Tweet {
+public class Comment {
 
     @Id
     private String id;
 
     private String content;
 
-    private LocalDateTime createdDate;
+    private LocalDateTime createdAt;
 
     private String authorEmail;
 
-    private Integer countLike = 0;
-
+    private String tweetId;
 }
