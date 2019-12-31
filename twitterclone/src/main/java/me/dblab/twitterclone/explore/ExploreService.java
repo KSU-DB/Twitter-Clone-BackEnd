@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import java.time.LocalDateTime;
-import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -50,11 +49,6 @@ public class ExploreService {
                         .flatMap(acc2 -> exploreRepository.deleteAllByKeywordAndAccountEmail(acc2.getKeyword(), acc2.getAccountEmail())
                                 .then(Mono.just(new ResponseEntity<Void>(HttpStatus.OK)))))
                 .switchIfEmpty(Mono.just(new ResponseEntity<>(HttpStatus.BAD_REQUEST)));
-
-//        return exploreRepository.findById(id)
-//                .flatMap(acc -> exploreRepository.deleteAllByKeywordAndAccountEmail(acc.getKeyword(), acc.getAccountEmail())
-//                        .then(Mono.just(new ResponseEntity<Void>(HttpStatus.OK))))
-//                .switchIfEmpty(Mono.just(new ResponseEntity<>(HttpStatus.BAD_REQUEST)));
     }
 
     private Mono<Explore> saveExplore(ExploreDto exploreDto)  {

@@ -2,7 +2,6 @@ package me.dblab.twitterclone.explore;
 
 import lombok.RequiredArgsConstructor;
 import me.dblab.twitterclone.tweet.Tweet;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.Errors;

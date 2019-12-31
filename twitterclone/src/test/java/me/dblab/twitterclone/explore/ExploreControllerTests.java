@@ -214,8 +214,6 @@ public class ExploreControllerTests extends BaseControllerTest {
 
         Flux<Explore> exploreFlux = exploreRepository.findAllByAccountEmailOrderByKeyword(currentAccount());
         Explore explore = exploreFlux.blockLast();
-        log.info("explore 주인 : " + explore.getAccountEmail());
-        log.info("currentAccount : " + explore.getAccountEmail());
         AccountDto anotherAccountDto = createAnotherAccountDto();
 
         webTestClient.post()
@@ -228,7 +226,6 @@ public class ExploreControllerTests extends BaseControllerTest {
 
         Mono<Account> byEmail2 = accountRepository.findByEmail(anotherAccountDto.getEmail());
         Account account = byEmail2.block();
-        log.info("account : " + account.getEmail());
         String jwt2 = BEARER + tokenProvider.generateToken(account);
 
         webTestClient.delete()
