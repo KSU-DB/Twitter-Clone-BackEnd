@@ -9,4 +9,5 @@ public interface TweetRepository extends ReactiveMongoRepository<Tweet, String> 
     Flux<Tweet> findAllByAuthorEmailOrderByCreatedDateDesc(String email);
     Flux<Tweet> findAllByAuthorEmail(String email);
     Mono<Tweet> findByAuthorEmail(String email);    // test용
+    Flux<Tweet> findAllByContentContainingOrderByCreatedDateDesc(String keyword);
 }
