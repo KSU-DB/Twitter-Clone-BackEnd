@@ -1,7 +1,6 @@
 package me.dblab.twitterclone.explore;
 
 import lombok.RequiredArgsConstructor;
-import me.dblab.twitterclone.tweet.Tweet;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.Errors;
@@ -23,10 +22,10 @@ public class ExploreController {
     }
 
     @PostMapping("/keywords")
-    public Flux<Tweet> getTweetListBySearch(@RequestBody ExploreDto exploreDto)   {
+    public Flux<Object> getListBySearch(@RequestBody ExploreDto exploreDto)   {
         return Mono.just(exploreDto)
                 .filter(this::validate)
-                .flatMapMany(exploreService::getTweetListByKeyword)
+                .flatMapMany(exploreService::getListByKeyword)
                 .switchIfEmpty(Flux.empty());
     }
 
