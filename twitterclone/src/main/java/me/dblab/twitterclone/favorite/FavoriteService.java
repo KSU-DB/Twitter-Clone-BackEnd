@@ -33,22 +33,20 @@ public class FavoriteService {
     }
 
     public Mono<ResponseEntity> saveLike(String tweetId) {
-        Favorite favorite = new Favorite();
-
         return accountService.findCurrentUser()
-                .flatMap(cu -> {
-                    favorite.setAccountEmail(cu.getEmail());
-                    favorite.setTweetId(tweetId);
-                    return favoriteRepository.save(favorite);
-                })
-                .doOnNext(updateCnt -> tweetRepository.findById(tweetId)
-                        .flatMap(addCnt -> {
-                            addCnt.setCountLike(addCnt.getCountLike() + 1);
-                            return tweetRepository.save(addCnt);
-                        })
-                        .subscribe())
-                .map(res -> new ResponseEntity<>(res, HttpStatus.CREATED));
-
+                            .flatMap(cu ->
+                                favoriteRepository.findByAccountEmailAndTweetId(cu.getEmail(), tweetId)
+                                            .map(favorite1 -> ResponseEntity.badRequest().build())
+                                            .switchIfEmpty(tweetRepository.findById(tweetId)
+                                            .flatMap(tweet -> {
+                                                tweet.setCountLike(tweet.getCountLike() + 1);
+                                                return tweetRepository.save(tweet);
+                                            }).flatMap(tweet -> favoriteRepository.save(
+                                                    Favorite.builder()
+                                                            .tweetId(tweetId)
+                                                            .accountEmail(cu.getEmail())
+                                                            .build()
+                                                    )).map(favorite -> new ResponseEntity<>(favorite, HttpStatus.CREATED))));
     }
 
     public Mono<ResponseEntity> deleteLike(String id) {
@@ -62,7 +60,5 @@ public class FavoriteService {
                         }).subscribe()
                 ).then(favoriteRepository.deleteById(id))
                 .map(res -> new ResponseEntity<>(res, HttpStatus.OK));
-
     }
-
 }

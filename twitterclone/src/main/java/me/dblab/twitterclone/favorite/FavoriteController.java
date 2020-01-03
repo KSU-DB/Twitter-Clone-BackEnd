@@ -28,8 +28,4 @@ public class FavoriteController {
     public Mono<ResponseEntity> unlikeTweet(@PathVariable String favoriteId)   {
         return favoriteService.deleteLike(favoriteId);
     }
-
-
-
-
 }
