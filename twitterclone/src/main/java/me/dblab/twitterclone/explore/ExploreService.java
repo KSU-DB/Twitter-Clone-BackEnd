@@ -1,8 +1,8 @@
 package me.dblab.twitterclone.explore;
 
 import lombok.RequiredArgsConstructor;
+import me.dblab.twitterclone.account.AccountRepository;
 import me.dblab.twitterclone.account.AccountService;
-import me.dblab.twitterclone.tweet.Tweet;
 import me.dblab.twitterclone.tweet.TweetRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
@@ -20,6 +20,7 @@ public class ExploreService {
     private final AccountService accountService;
     private final ModelMapper modelMapper;
     private final TweetRepository tweetRepository;
+    private final AccountRepository accountRepository;
 
     public Flux<Explore> getSavedExplore() {
         return accountService.findCurrentUser()
@@ -27,10 +28,11 @@ public class ExploreService {
                         .filter(Explore::isSaved));
     }
 
-    public Flux<Tweet> getTweetListByKeyword(ExploreDto exploreDto) {
+    public Flux<Object> getListByKeyword(ExploreDto exploreDto) {
         return saveExplore(exploreDto)
                 .flatMap(exploreRepository::save)
-                .flatMapMany(exp -> tweetRepository.findAllByContentContainingOrderByCreatedDateDesc(exp.getKeyword()));
+                .flatMapMany(exp -> accountRepository.findAllByUsernameContainingOrNicknameContainingOrderByCreatedDate(exp.getKeyword(), exp.getKeyword())
+                    .mergeWith(tweetRepository.findAllByContentContainingOrderByCreatedDateDesc(exp.getKeyword())));
     }
 
     public Mono<ResponseEntity> saveKeyword(ExploreDto exploreDto) {

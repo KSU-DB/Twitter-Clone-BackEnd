@@ -7,4 +7,5 @@ import reactor.core.publisher.Mono;
 public interface AccountRepository extends ReactiveMongoRepository<Account, String> {
     Mono<Account> findByEmail(String email);
     Flux<Account> findAllByEmail(String email);
+    Flux<Object> findAllByUsernameContainingOrNicknameContainingOrderByCreatedDate(String keyword, String keyword2);
 }

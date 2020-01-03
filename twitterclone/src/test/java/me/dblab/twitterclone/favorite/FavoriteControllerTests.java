@@ -66,7 +66,7 @@ public class FavoriteControllerTests extends BaseControllerTest {
     @BeforeEach
     public void setUp() throws Exception {
 
-        accountRepository.deleteAll().then(favoriteRepository.deleteAll()).subscribe();
+        accountRepository.deleteAll().then(favoriteRepository.deleteAll()).then(tweetRepository.deleteAll()).subscribe();
 
         AccountDto account = createAccountDto();
 
