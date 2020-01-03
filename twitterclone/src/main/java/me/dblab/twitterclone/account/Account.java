@@ -1,5 +1,6 @@
 package me.dblab.twitterclone.account;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -16,6 +17,7 @@ public class Account {
     private String id;
     private String username;
     private String nickname;
+    @JsonIgnore
     private String password;
     private String email;
     private Date birthDate;

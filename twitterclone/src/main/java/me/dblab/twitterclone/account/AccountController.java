@@ -30,8 +30,8 @@ public class AccountController {
     }
 
     @PostMapping("/login")
-    public Mono<ResponseEntity<Jwt>> login(@RequestBody Account account) {
-        return accountService.login(account);
+    public Mono<ResponseEntity<Jwt>> login(@RequestBody AccountDto accountDto) {
+        return accountService.login(accountDto);
     }
 
     @PutMapping("/{accountId}")
