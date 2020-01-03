@@ -43,10 +43,10 @@ public class AccountService implements ReactiveUserDetailsService {
                         .map(saveUser -> new ResponseEntity<>(saveUser, HttpStatus.CREATED))));
     }
 
-    public Mono<ResponseEntity<Jwt>> login(Account account) {
-        return Mono.just(account)
-                .flatMap(account1 -> accountRepository.findByEmail(account.getEmail()))
-                .filter(account1 -> passwordEncoder.matches(account.getPassword(), account1.getPassword()))
+    public Mono<ResponseEntity<Jwt>> login(AccountDto accountDto) {
+        return Mono.just(accountDto)
+                .flatMap(account1 -> accountRepository.findByEmail(accountDto.getEmail()))
+                .filter(account1 -> passwordEncoder.matches(accountDto.getPassword(), account1.getPassword()))
                 .map(account1 -> new ResponseEntity<>(new Jwt(tokenProvider.generateToken(account1)), HttpStatus.OK))
                 .switchIfEmpty(Mono.just(ResponseEntity.badRequest().build()));
     }
