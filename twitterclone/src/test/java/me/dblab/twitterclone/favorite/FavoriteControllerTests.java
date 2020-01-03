@@ -24,9 +24,10 @@ import reactor.test.StepVerifier;
 import java.util.Objects;
 import java.util.stream.IntStream;
 import static org.assertj.core.api.BDDAssertions.then;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @Slf4j
-public class FavoriteControllerTests extends BaseControllerTest {
+class FavoriteControllerTests extends BaseControllerTest {
 
     @Autowired
     FavoriteRepository favoriteRepository;
@@ -60,12 +61,11 @@ public class FavoriteControllerTests extends BaseControllerTest {
     private String jwt;
     private String[] jwtArr = new String[31];
     
-    Tweet tweet;
-    Mono<Tweet> byAccountId;
+    private Tweet tweet;
+    private Mono<Tweet> byAccountId;
 
     @BeforeEach
-    public void setUp() throws Exception {
-
+    void setUp() throws Exception {
         accountRepository.deleteAll().then(favoriteRepository.deleteAll()).then(tweetRepository.deleteAll()).subscribe();
 
         AccountDto account = createAccountDto();
@@ -114,7 +114,7 @@ public class FavoriteControllerTests extends BaseControllerTest {
     
     @Test
     @DisplayName("30명의 user 저장 & 좋아요(30개) & 좋아요 카운트 & 30명이 누른 좋아요 취소")
-    public void save_accounts_favorites_AND_delete_favorites()   {
+    void save_accounts_favorites_AND_delete_favorites()   {
 
         IntStream.rangeClosed(1, 30).forEach(i -> {
 
@@ -208,6 +208,35 @@ public class FavoriteControllerTests extends BaseControllerTest {
 
         });
     }
+
+    @Test
+    @DisplayName("좋아요가 눌러진 트윗에 다시 좋아요를 요청했을 경우 Bad Request 반환")
+    void favorite_after_favorite() {
+        //좋아요 요청
+        webTestClient.post()
+                .uri(favoriteUrl + "/{tweetId}", tweet.getId())
+                .header(HttpHeaders.AUTHORIZATION, jwt)
+                .exchange()
+                .expectStatus()
+                .isCreated()
+                .expectBody()
+                .jsonPath("accountEmail").exists()
+                .jsonPath("tweetId").value(Matchers.equalTo(tweet.getId()));
+
+        //좋아요가 눌러진 트윗에 다시 좋아요 요청
+        webTestClient.post()
+                .uri(favoriteUrl + "/{tweetId}", tweet.getId())
+                .header(HttpHeaders.AUTHORIZATION, jwt)
+                .exchange()
+                .expectStatus()
+                .isBadRequest();
+
+        //Tweet 객체의 좋아요 개수 확인
+        StepVerifier.create(tweetRepository.findById(tweet.getId()))
+                .assertNext(tweet1 -> assertEquals(tweet1.getCountLike(), 1))
+                .verifyComplete();
+    }
+
 
     private String currentAccount() throws Exception {
         Mono<Account> byEmail = accountRepository.findByEmail(tokenProvider.getUsernameFromToken(jwt.replace(BEARER, "")));
