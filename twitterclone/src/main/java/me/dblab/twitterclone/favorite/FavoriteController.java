@@ -3,7 +3,6 @@ package me.dblab.twitterclone.favorite;
 import lombok.RequiredArgsConstructor;
 import me.dblab.twitterclone.account.Account;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
