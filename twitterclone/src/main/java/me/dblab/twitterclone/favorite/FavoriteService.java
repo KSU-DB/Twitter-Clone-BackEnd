@@ -36,7 +36,7 @@ public class FavoriteService {
         return accountService.findCurrentUser()
                             .flatMap(cu ->
                                 favoriteRepository.findByAccountEmailAndTweetId(cu.getEmail(), tweetId)
-                                            .map(favorite1 -> ResponseEntity.badRequest().build())
+                                            .map(favorite1 -> ResponseEntity.badRequest().body(favorite1))
                                             .switchIfEmpty(tweetRepository.findById(tweetId)
                                             .flatMap(tweet -> {
                                                 tweet.setCountLike(tweet.getCountLike() + 1);

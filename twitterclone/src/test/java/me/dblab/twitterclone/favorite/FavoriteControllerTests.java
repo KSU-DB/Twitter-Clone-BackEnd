@@ -229,7 +229,11 @@ class FavoriteControllerTests extends BaseControllerTest {
                 .header(HttpHeaders.AUTHORIZATION, jwt)
                 .exchange()
                 .expectStatus()
-                .isBadRequest();
+                .isBadRequest()
+                .expectBody()
+                .jsonPath("id").exists()
+                .jsonPath("accountEmail").exists()
+                .jsonPath("tweetId").exists();
 
         //Tweet 객체의 좋아요 개수 확인
         StepVerifier.create(tweetRepository.findById(tweet.getId()))
